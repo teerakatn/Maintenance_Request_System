@@ -46,6 +46,9 @@ function makeToken(payload = { id: 1, email: "test@test.com", role: "USER" as co
   return jwt.sign(payload, SECRET, { expiresIn: "1h" });
 }
 
+// รหัสผ่านที่ผ่านมาตรฐาน OWASP
+const VALID_PASSWORD = "SecureP@ss1";
+
 // ---------------------------------------------------------------------------
 // POST /api/auth/register
 // ---------------------------------------------------------------------------
@@ -55,7 +58,8 @@ describe("POST /api/auth/register", () => {
   const validBody = {
     name: "สมชาย ใจดี",
     email: "somchai@test.com",
-    password: "pass1234",
+    password: VALID_PASSWORD,
+    confirmPassword: VALID_PASSWORD,
     role: "USER",
   };
 
@@ -92,11 +96,28 @@ describe("POST /api/auth/register", () => {
     expect(res.body.errors).toBeDefined();
   });
 
-  it("400 เมื่อ password สั้นกว่า 6 ตัวอักษร", async () => {
+  it("400 เมื่อ password สั้นกว่า 8 ตัวอักษร", async () => {
+    const shortPass = "Ab1!";
     const res = await request(app)
       .post("/api/auth/register")
-      .send({ ...validBody, password: "123" });
+      .send({ ...validBody, password: shortPass, confirmPassword: shortPass });
     expect(res.status).toBe(400);
+  });
+
+  it("400 เมื่อ password ไม่มีอักขระพิเศษ (ไม่ผ่าน OWASP)", async () => {
+    const weakPass = "SecurePass1";
+    const res = await request(app)
+      .post("/api/auth/register")
+      .send({ ...validBody, password: weakPass, confirmPassword: weakPass });
+    expect(res.status).toBe(400);
+  });
+
+  it("400 เมื่อ confirmPassword ไม่ตรงกับ password", async () => {
+    const res = await request(app)
+      .post("/api/auth/register")
+      .send({ ...validBody, confirmPassword: VALID_PASSWORD + "X" });
+    expect(res.status).toBe(400);
+    expect(res.body.errors?.confirmPassword).toBeDefined();
   });
 
   it("400 เมื่อ body ว่างเปล่า", async () => {

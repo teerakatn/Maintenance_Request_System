@@ -1,5 +1,8 @@
 import { registerSchema, loginSchema } from "../../schemas/auth.schema";
 
+// รหัสผ่านที่ผ่านมาตรฐาน OWASP: uppercase + lowercase + digit + special + min 8
+const VALID_PASSWORD = "SecureP@ss1";
+
 // ---------------------------------------------------------------------------
 // registerSchema
 // ---------------------------------------------------------------------------
@@ -7,7 +10,8 @@ describe("registerSchema", () => {
   const validPayload = {
     name: "สมชาย ใจดี",
     email: "somchai@example.com",
-    password: "123456",
+    password: VALID_PASSWORD,
+    confirmPassword: VALID_PASSWORD,
     role: "USER" as const,
   };
 
@@ -17,6 +21,17 @@ describe("registerSchema", () => {
     if (result.success) {
       expect(result.data.name).toBe("สมชาย ใจดี");
       expect(result.data.role).toBe("USER");
+    }
+  });
+
+  it("แปลง email เป็นตัวพิมพ์เล็กอัตโนมัติ", () => {
+    const result = registerSchema.safeParse({
+      ...validPayload,
+      email: "SOMCHAI@EXAMPLE.COM",
+    });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.email).toBe("somchai@example.com");
     }
   });
 
@@ -62,9 +77,80 @@ describe("registerSchema", () => {
     expect(result.success).toBe(false);
   });
 
-  it("ปฏิเสธเมื่อ password สั้นกว่า 6 ตัวอักษร", () => {
-    const result = registerSchema.safeParse({ ...validPayload, password: "123" });
+  // -----------------------------------------------------------------------
+  // OWASP Password Strength Tests
+  // -----------------------------------------------------------------------
+  it("ปฏิเสธเมื่อ password สั้นกว่า 8 ตัวอักษร", () => {
+    const shortPass = "Ab1!"; // 4 chars
+    const result = registerSchema.safeParse({
+      ...validPayload,
+      password: shortPass,
+      confirmPassword: shortPass,
+    });
     expect(result.success).toBe(false);
+  });
+
+  it("ปฏิเสธเมื่อ password ยาวเกิน 128 ตัวอักษร", () => {
+    const longPass = "Ab1!" + "A".repeat(125); // 129 chars
+    const result = registerSchema.safeParse({
+      ...validPayload,
+      password: longPass,
+      confirmPassword: longPass,
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("ปฏิเสธเมื่อ password ไม่มีตัวพิมพ์ใหญ่", () => {
+    const pass = "secure@pass1";
+    const result = registerSchema.safeParse({
+      ...validPayload,
+      password: pass,
+      confirmPassword: pass,
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("ปฏิเสธเมื่อ password ไม่มีตัวพิมพ์เล็ก", () => {
+    const pass = "SECURE@PASS1";
+    const result = registerSchema.safeParse({
+      ...validPayload,
+      password: pass,
+      confirmPassword: pass,
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("ปฏิเสธเมื่อ password ไม่มีตัวเลข", () => {
+    const pass = "SecurePass!";
+    const result = registerSchema.safeParse({
+      ...validPayload,
+      password: pass,
+      confirmPassword: pass,
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("ปฏิเสธเมื่อ password ไม่มีอักขระพิเศษ", () => {
+    const pass = "SecurePass1";
+    const result = registerSchema.safeParse({
+      ...validPayload,
+      password: pass,
+      confirmPassword: pass,
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("ปฏิเสธเมื่อ password และ confirmPassword ไม่ตรงกัน", () => {
+    const result = registerSchema.safeParse({
+      ...validPayload,
+      password:        VALID_PASSWORD,
+      confirmPassword: VALID_PASSWORD + "X",
+    });
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      const errs = result.error.flatten().fieldErrors;
+      expect(errs.confirmPassword).toBeDefined();
+    }
   });
 
   it("ปฏิเสธ role ที่ไม่รู้จัก", () => {
@@ -81,13 +167,21 @@ describe("registerSchema", () => {
 // ---------------------------------------------------------------------------
 describe("loginSchema", () => {
   const validPayload = {
-    email: "somchai@example.com",
-    password: "123456",
+    email: "SOMCHAI@EXAMPLE.COM", // ควรถูกแปลงเป็น lowercase
+    password: VALID_PASSWORD,
   };
 
   it("ผ่านเมื่อข้อมูลถูกต้อง", () => {
     const result = loginSchema.safeParse(validPayload);
     expect(result.success).toBe(true);
+  });
+
+  it("แปลง email เป็นตัวพิมพ์เล็กอัตโนมัติ", () => {
+    const result = loginSchema.safeParse(validPayload);
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.email).toBe("somchai@example.com");
+    }
   });
 
   it("ปฏิเสธเมื่อ email ไม่ถูกต้อง", () => {
@@ -101,7 +195,7 @@ describe("loginSchema", () => {
   });
 
   it("ปฏิเสธเมื่อขาด field email", () => {
-    const result = loginSchema.safeParse({ password: "123456" });
+    const result = loginSchema.safeParse({ password: VALID_PASSWORD });
     expect(result.success).toBe(false);
   });
 
@@ -110,3 +204,4 @@ describe("loginSchema", () => {
     expect(result.success).toBe(false);
   });
 });
+
