@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { createRepair, fetchMyRepairs } from "../lib/api";
 import type { CreateRepairPayload, RepairRequest } from "../types/repair";
 import NewRepairModal from "../components/NewRepairModal";
 import ProgressStepper from "../components/ProgressStepper";
 import StatusBadge from "../components/StatusBadge";
+import { useAuth } from "../contexts/AuthContext";
 
 // ── Stat card ─────────────────────────────────────────────────────────────────
 function StatCard({ label, count, color }: { label: string; count: number; color: string }) {
@@ -96,11 +98,18 @@ function RepairCard({ request }: { request: RepairRequest }) {
 
 // ── Dashboard ─────────────────────────────────────────────────────────────────
 export default function Dashboard() {
+  const { user, logout }          = useAuth();
+  const navigate                  = useNavigate();
   const [repairs, setRepairs]     = useState<RepairRequest[]>([]);
   const [loading, setLoading]     = useState(true);
   const [error, setError]         = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [search, setSearch]       = useState("");
+
+  function handleLogout() {
+    logout();
+    navigate("/login", { replace: true });
+  }
 
   async function loadRepairs() {
     try {
@@ -154,16 +163,39 @@ export default function Dashboard() {
               <p className="text-xs text-gray-400">Dashboard ผู้แจ้งซ่อม</p>
             </div>
           </div>
-          <button
-            onClick={() => setShowModal(true)}
-            className="flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white
-              hover:bg-blue-700 active:scale-95 transition-all shadow-sm shadow-blue-200"
-          >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-            </svg>
-            แจ้งซ่อมใหม่
-          </button>
+          <div className="flex items-center gap-2">
+            {/* User info */}
+            {user && (
+              <div className="hidden sm:flex items-center gap-2 rounded-xl bg-gray-100 px-3 py-2">
+                <div className="w-6 h-6 rounded-full bg-blue-600 flex items-center justify-center">
+                  <span className="text-xs font-bold text-white">{user.name.charAt(0).toUpperCase()}</span>
+                </div>
+                <span className="text-sm font-medium text-gray-700">{user.name}</span>
+              </div>
+            )}
+            {/* New repair button */}
+            <button
+              onClick={() => setShowModal(true)}
+              className="flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white
+                hover:bg-blue-700 active:scale-95 transition-all shadow-sm shadow-blue-200"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+              </svg>
+              แจ้งซ่อมใหม่
+            </button>
+            {/* Logout button */}
+            <button
+              onClick={handleLogout}
+              title="ออกจากระบบ"
+              className="rounded-xl border border-gray-200 bg-white p-2.5 text-gray-500 hover:text-red-500 hover:border-red-200 transition-colors"
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round"
+                  d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+              </svg>
+            </button>
+          </div>
         </div>
       </header>
 
