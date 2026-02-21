@@ -8,6 +8,7 @@ import { generateRepairId } from "../lib/generateId";
 import { authenticate } from "../middleware/auth";
 import { checkRole } from "../middleware/checkRole";
 import { createRepairSchema, updateStatusSchema } from "../schemas/repair.schema";
+import { sendStatusChangedEmail } from "../lib/email";
 
 const router = Router();
 
@@ -44,6 +45,49 @@ router.get(
       res.status(200).json({ success: true, data: requests });
     } catch (error) {
       console.error("[GET /api/repair/me]", error);
+      res.status(500).json({ success: false, message: "เกิดข้อผิดพลาดภายในระบบ" });
+    }
+  }
+);
+
+// ---------------------------------------------------------------------------
+// GET /api/repair/:id
+// ดึงรายละเอียดคำร้อง + ประวัติสถานะทั้งหมด
+// ---------------------------------------------------------------------------
+router.get(
+  "/:id",
+  authenticate,
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const id = req.params["id"] as string;
+      const { role, id: userId } = req.user!;
+
+      const request = await prisma.repairRequest.findUnique({
+        where: { id },
+        include: {
+          user:        { select: { id: true, name: true, email: true } },
+          technician:  { select: { id: true, name: true, email: true } },
+          statusLogs: {
+            orderBy: { changedAt: "asc" },
+            include: { changedByUser: { select: { id: true, name: true, role: true } } },
+          },
+        },
+      });
+
+      if (!request) {
+        res.status(404).json({ success: false, message: `ไม่พบคำร้อง ID: ${id}` });
+        return;
+      }
+
+      // USER ดูได้เฉพาะงานของตัวเอง
+      if (role === "USER" && request.userId !== userId) {
+        res.status(403).json({ success: false, message: "ไม่มีสิทธิ์ดูคำร้องนี้" });
+        return;
+      }
+
+      res.status(200).json({ success: true, data: request });
+    } catch (error) {
+      console.error("[GET /api/repair/:id]", error);
       res.status(500).json({ success: false, message: "เกิดข้อผิดพลาดภายในระบบ" });
     }
   }
@@ -176,10 +220,10 @@ router.patch(
 
       const { status, repairNote, remark } = parsed.data;
 
-      // ดึง request เดิม — ต้องมีอยู่จริง
+      // ดึง request เดิม + user (เพื่อส่ง email)
       const existing = await prisma.repairRequest.findUnique({
         where: { id },
-        select: { id: true, status: true, techId: true },
+        include: { user: { select: { email: true, name: true } } },
       });
 
       if (!existing) {
@@ -228,6 +272,15 @@ router.patch(
           },
         }),
       ]);
+
+      // ส่ง Email แจ้งเตือนผู้แจ้งซ่อม (fire-and-forget ไม่หยุดรอ)
+      sendStatusChangedEmail({
+        toEmail:    existing.user.email,
+        toName:     existing.user.name,
+        requestId:  id,
+        deviceName: existing.deviceName,
+        newStatus:  status,
+      }).catch((err) => console.error("[Email] sendStatusChanged failed:", err));
 
       res.status(200).json({
         success: true,

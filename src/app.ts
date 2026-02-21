@@ -2,6 +2,9 @@ import express from "express";
 import path from "path";
 
 import repairRouter from "./routes/repair";
+import authRouter   from "./routes/auth";
+import adminRouter  from "./routes/admin";
+import techRouter   from "./routes/tech";
 
 const app = express();
 
@@ -11,17 +14,27 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// เสิร์ฟไฟล์รูปภาพที่อัปโหลดผ่าน static
+// เสิร์ฟไฟล์รูปภาพที่อัปโหลด
 app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 
-// ---------------------------------------------------------------------------
-// Routes
-// ---------------------------------------------------------------------------
-app.use("/api/repair", repairRouter);
+// เสิร์ฟ React build (client/dist) — ต้อง build ก่อนด้วย `npm run build` ใน client/
+const clientDist = path.join(process.cwd(), "client", "dist");
+app.use(express.static(clientDist));
 
-// 404 Handler
-app.use((_req, res) => {
-  res.status(404).json({ success: false, message: "ไม่พบเส้นทางที่ร้องขอ" });
+// ---------------------------------------------------------------------------
+// API Routes
+// ---------------------------------------------------------------------------
+app.use("/api/auth",   authRouter);
+app.use("/api/repair", repairRouter);
+app.use("/api/admin",  adminRouter);
+app.use("/api/tech",   techRouter);
+
+// ---------------------------------------------------------------------------
+// Catch-all — ส่ง index.html กลับสำหรับทุก route ที่ไม่ใช่ /api
+// (รองรับ React client-side routing)
+// ---------------------------------------------------------------------------
+app.get(/^(?!\/api).*/, (_req, res) => {
+  res.sendFile(path.join(clientDist, "index.html"));
 });
 
 // Global Error Handler
@@ -32,7 +45,6 @@ app.use(
     res: express.Response,
     _next: express.NextFunction
   ) => {
-    // Multer error (เช่น ไฟล์ใหญ่เกิน / ประเภทไม่ถูกต้อง)
     if (err.message) {
       res.status(400).json({ success: false, message: err.message });
       return;
