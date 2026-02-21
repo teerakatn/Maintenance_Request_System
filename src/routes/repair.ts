@@ -12,6 +12,44 @@ import { createRepairSchema, updateStatusSchema } from "../schemas/repair.schema
 const router = Router();
 
 // ---------------------------------------------------------------------------
+// GET /api/repair/me
+// ดึงรายการแจ้งซ่อมของ User คนปัจจุบัน
+// ---------------------------------------------------------------------------
+router.get(
+  "/me",
+  authenticate,
+  checkRole("USER", "TECH", "ADMIN"),
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const userId = req.user!.id;
+
+      const requests = await prisma.repairRequest.findMany({
+        where: { userId },
+        orderBy: { createdAt: "desc" },
+        select: {
+          id: true,
+          deviceName: true,
+          description: true,
+          priority: true,
+          status: true,
+          imageUrl: true,
+          repairNote: true,
+          createdAt: true,
+          updatedAt: true,
+          user: { select: { id: true, name: true, email: true } },
+          technician: { select: { id: true, name: true, email: true } },
+        },
+      });
+
+      res.status(200).json({ success: true, data: requests });
+    } catch (error) {
+      console.error("[GET /api/repair/me]", error);
+      res.status(500).json({ success: false, message: "เกิดข้อผิดพลาดภายในระบบ" });
+    }
+  }
+);
+
+// ---------------------------------------------------------------------------
 // Multer Configuration — รองรับเฉพาะไฟล์รูปภาพ ขนาดไม่เกิน 5MB
 // ---------------------------------------------------------------------------
 const storage = multer.diskStorage({
