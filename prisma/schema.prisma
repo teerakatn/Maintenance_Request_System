@@ -1,0 +1,102 @@
+// =============================================================================
+// Prisma Schema - Maintenance Request System
+// Database: MySQL
+// =============================================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// =============================================================================
+// Enums
+// =============================================================================
+
+enum Role {
+  USER  // ผู้แจ้งซ่อม
+  TECH  // ช่างซ่อม
+  ADMIN // ผู้ดูแลระบบ
+}
+
+enum Priority {
+  LOW    // ต่ำ
+  MEDIUM // ปานกลาง
+  HIGH   // สูง
+}
+
+enum RequestStatus {
+  PENDING        // รอดำเนินการ
+  IN_PROGRESS    // กำลังซ่อม
+  WAITING_REVIEW // รอตรวจรับ
+  COMPLETED      // เสร็จสิ้น
+}
+
+// =============================================================================
+// Models
+// =============================================================================
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String
+  name      String
+  role      Role     @default(USER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  requests         RepairRequest[] @relation("RequesterRequests")
+  assignedRequests RepairRequest[] @relation("TechnicianRequests")
+  statusChanges    StatusLog[]
+
+  @@map("users")
+}
+
+model RepairRequest {
+  id          String        @id // Format: REP-YYYYMMDD-XXXX (generated in application layer)
+  deviceName  String        // ชื่ออุปกรณ์
+  description String        @db.Text // อาการเสีย
+  priority    Priority      @default(MEDIUM)
+  status      RequestStatus @default(PENDING)
+  imageUrl    String?       // แนบรูปภาพ (optional)
+  repairNote  String?       @db.Text // บันทึกวิธีการซ่อมและอะไหล่ที่ใช้
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  // Foreign Keys
+  userId Int
+  techId Int? // ช่างที่ได้รับมอบหมาย (nullable จนกว่าจะถูก assign)
+
+  // Relations
+  user       User        @relation("RequesterRequests", fields: [userId], references: [id])
+  technician User?       @relation("TechnicianRequests", fields: [techId], references: [id])
+  statusLogs StatusLog[]
+
+  @@index([userId])
+  @@index([techId])
+  @@index([status])
+  @@map("repair_requests")
+}
+
+model StatusLog {
+  id        Int           @id @default(autoincrement())
+  oldStatus RequestStatus
+  newStatus RequestStatus
+  remark    String?       // หมายเหตุประกอบการเปลี่ยนสถานะ
+  changedAt DateTime      @default(now())
+
+  // Foreign Keys
+  requestId String
+  changedBy Int // userId ของผู้ที่เปลี่ยนสถานะ
+
+  // Relations
+  request     RepairRequest @relation(fields: [requestId], references: [id])
+  changedByUser User        @relation(fields: [changedBy], references: [id])
+
+  @@index([requestId])
+  @@map("status_logs")
+}
