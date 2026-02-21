@@ -1,18 +1,24 @@
 import { Navigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import type { ReactNode } from "react";
+import type { Role } from "../types/auth";
 
 interface Props {
   children: ReactNode;
+  /** ถ้าระบุ — เฉพาะ Role ใน list นี้เท่านั้นที่เข้าได้ */
+  allowedRoles?: Role[];
+  /** หน้าที่จะ redirect เมื่อ Role ไม่มีสิทธิ์ (default "/") */
+  fallback?: string;
 }
 
 /**
  * ห่อ route ที่ต้อง Login ก่อนเข้า
- * ถ้ายังไม่มี token → redirect ไปหน้า /login
- * รอ hydrate จาก localStorage ก่อน (isLoading)
+ *  - ไม่มี token          → /login
+ *  - Role ไม่มีสิทธิ์      → fallback (default "/")
+ *  - ผ่านทุกเงื่อนไข       → render children
  */
-export default function ProtectedRoute({ children }: Props) {
-  const { token, isLoading } = useAuth();
+export default function ProtectedRoute({ children, allowedRoles, fallback = "/" }: Props) {
+  const { token, user, isLoading } = useAuth();
 
   if (isLoading) {
     return (
@@ -22,8 +28,14 @@ export default function ProtectedRoute({ children }: Props) {
     );
   }
 
-  if (!token) {
+  // ยังไม่ login
+  if (!token || !user) {
     return <Navigate to="/login" replace />;
+  }
+
+  // Login แล้วแต่ Role ไม่อนุญาต
+  if (allowedRoles && !allowedRoles.includes(user.role)) {
+    return <Navigate to={fallback} replace />;
   }
 
   return <>{children}</>;

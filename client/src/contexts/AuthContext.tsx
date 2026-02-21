@@ -5,14 +5,15 @@ import {
   useEffect,
   type ReactNode,
 } from "react";
-import type { AuthUser } from "../types/auth";
-import { loginApi } from "../lib/api";
+import type { AuthUser, RegisterPayload } from "../types/auth";
+import { loginApi, registerApi } from "../lib/api";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 interface AuthContextValue {
   user: AuthUser | null;
   token: string | null;
   isLoading: boolean;
+  register: (payload: RegisterPayload) => Promise<void>;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
 }
@@ -42,6 +43,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoading(false);
   }, []);
 
+  async function register(payload: RegisterPayload) {
+    await registerApi(payload);
+    // หลังสมัครสำเร็จ → login อัตโนมัติ
+    await login(payload.email, payload.password);
+  }
+
   async function login(email: string, password: string) {
     const { token: newToken, user: newUser } = await loginApi(email, password);
     localStorage.setItem("token", newToken);
@@ -58,7 +65,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, token, isLoading, login, logout }}>
+    <AuthContext.Provider value={{ user, token, isLoading, register, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

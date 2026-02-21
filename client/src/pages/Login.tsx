@@ -137,7 +137,13 @@ export default function Login() {
           </form>
         </div>
 
-        <p className="text-center text-xs text-gray-400 mt-6">
+        <p className="text-center text-sm text-gray-500 mt-5">
+          ยังไม่มีบัญชี?{" "}
+          <a href="/register" className="font-semibold text-blue-600 hover:text-blue-700 hover:underline">
+            สมัครสมาชิก
+          </a>
+        </p>
+        <p className="text-center text-xs text-gray-400 mt-3">
           ระบบแจ้งซ่อมอุปกรณ์ · สงวนสิทธิ์
         </p>
       </div>
