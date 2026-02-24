@@ -1,6 +1,6 @@
 import axios from "axios";
 import type { ApiResponse, CreateRepairPayload, RepairRequest } from "../types/repair";
-import type { AuthUser, LoginResponse, RegisterPayload, RegisterResponse } from "../types/auth";
+import type { LoginResponse, RegisterPayload, RegisterResponse } from "../types/auth";
 
 // ── Axios instance ────────────────────────────────────────────────────────────
 const api = axios.create({ baseURL: "/api" });
@@ -33,13 +33,6 @@ export async function loginApi(
     password,
   });
   if (!data.data) throw new Error(data.message ?? "เข้าสู่ระบบไม่สำเร็จ");
-  return data.data;
-}
-
-/** ดึงข้อมูล user จาก token ปัจจุบัน */
-export async function getMeApi(): Promise<AuthUser> {
-  const { data } = await api.get<ApiResponse<AuthUser>>("/auth/me");
-  if (!data.data) throw new Error("ไม่สามารถดึงข้อมูลผู้ใช้ได้");
   return data.data;
 }
 
@@ -88,6 +81,13 @@ export async function updateRepairStatus(
   return data.data;
 }
 
+/** ผู้แจ้งซ่อมยืนยันรับงาน (WAITING_REVIEW → COMPLETED) */
+export async function confirmRepair(id: string): Promise<RepairRequest> {
+  const { data } = await api.patch<ApiResponse<RepairRequest>>(`/repair/${id}/confirm`);
+  if (!data.data) throw new Error(data.message);
+  return data.data;
+}
+
 // ── Admin API ─────────────────────────────────────────────────────────────────
 
 export interface AdminRepairFilters {
@@ -122,8 +122,21 @@ export async function assignRepair(repairId: string, techId: number): Promise<Re
   return data.data;
 }
 
+/** Admin Summary — ข้อมูลสรุปจาก /api/admin/report/summary */
+export interface AdminSummaryData {
+  counts: {
+    total: number;
+    pending: number;
+    inProgress: number;
+    waitingReview: number;
+    completed: number;
+  };
+  byPriority: { priority: string; count: number }[];
+  recentRequests: RepairRequest[];
+}
+
 /** ดึง Admin summary stats */
-export async function fetchAdminSummary(): Promise<Record<string, number>> {
-  const { data } = await api.get<ApiResponse<Record<string, number>>>("/admin/report/summary");
-  return data.data ?? {};
+export async function fetchAdminSummary(): Promise<AdminSummaryData> {
+  const { data } = await api.get<ApiResponse<AdminSummaryData>>("/admin/report/summary");
+  return data.data ?? { counts: { total: 0, pending: 0, inProgress: 0, waitingReview: 0, completed: 0 }, byPriority: [], recentRequests: [] };
 }

@@ -1,4 +1,5 @@
-import { useState } from "react";
+import type { ReactNode } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import type { Role } from "../types/auth";
@@ -16,7 +17,7 @@ const ROLE_COLOR: Record<Role, string> = {
 };
 
 // ── Nav Items per Role ────────────────────────────────────────────────────────
-interface NavItem { label: string; to: string; icon: JSX.Element }
+interface NavItem { label: string; to: string; icon: ReactNode }
 
 function navItems(role: Role): NavItem[] {
   const iconRepair = (
@@ -62,12 +63,13 @@ export default function Navbar({ onNewRepair }: { onNewRepair?: () => void }) {
 
   if (!user) return null;
 
-  const items = navItems(user.role);
+  // Memoize nav items — สร้างใหม่เฉพาะเมื่อ role เปลี่ยน (JSX elements ไม่ถูกสร้างใหม่ทุก render)
+  const items = useMemo(() => navItems(user.role), [user.role]);
 
-  function handleLogout() {
+  const handleLogout = useCallback(() => {
     logout();
     navigate("/login", { replace: true });
-  }
+  }, [logout, navigate]);
 
   return (
     <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-gray-100 shadow-sm shadow-gray-100/60">

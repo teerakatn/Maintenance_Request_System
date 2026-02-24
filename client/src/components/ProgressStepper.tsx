@@ -30,8 +30,8 @@ export default function ProgressStepper({ status }: Props) {
   return (
     <ol className="flex items-start w-full">
       {STEPS.map((step, idx) => {
-        const isDone    = idx < currentIndex;
-        const isCurrent = idx === currentIndex;
+        const isDone    = idx < currentIndex || (status === "COMPLETED" && idx === currentIndex);
+        const isCurrent = idx === currentIndex && status !== "COMPLETED";
 
         return (
           <li key={step.key} className={`flex flex-col items-center flex-1 ${idx < STEPS.length - 1 ? "relative" : ""}`}>

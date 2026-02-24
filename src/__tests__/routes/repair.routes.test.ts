@@ -5,9 +5,10 @@ import jwt from "jsonwebtoken";
 jest.mock("../../lib/prisma", () => ({
   __esModule: true,
   default: {
-    user:          { findUnique: jest.fn() },
+    user:          { findUnique: jest.fn(), findMany: jest.fn() },
     repairRequest: {
       findMany:   jest.fn(),
+      findFirst:  jest.fn(),
       findUnique: jest.fn(),
       create:     jest.fn(),
       update:     jest.fn(),
@@ -26,6 +27,7 @@ jest.mock("../../lib/email", () => ({
 // mock bcryptjs (ใช้โดย auth route ที่ถูก import ใน app)
 jest.mock("bcryptjs", () => ({
   hash:    jest.fn().mockResolvedValue("hashed_password_mock"),
+  hashSync: jest.fn().mockReturnValue("$2b$12$dummyhashfortimesafetycheck000000000000000000000000"),
   compare: jest.fn(),
 }));
 
@@ -182,13 +184,18 @@ describe("POST /api/repair", () => {
     priority:    "MEDIUM",
   };
 
-  it("201 เมื่อสร้างคำร้องสำเร็จ", async () => {
-    (prisma.repairRequest.count as jest.Mock).mockResolvedValueOnce(0);
+  it("201 เมื่อสร้างคำร้องสำเร็จ (auto-assign ช่าง)", async () => {
+    // mock findMany สำหรับ autoAssign — คืนช่าง 1 คน
+    (prisma.user.findMany as jest.Mock).mockResolvedValueOnce([
+      { id: 10, name: "ช่าง A", email: "tech@test.com", _count: { assignedRequests: 0 } },
+    ]);
+    (prisma.repairRequest.findFirst as jest.Mock).mockResolvedValueOnce(null);
     (prisma.repairRequest.create as jest.Mock).mockResolvedValueOnce({
       ...fakeRepair,
       id:         "REP-20260221-0001",
       deviceName: validBody.deviceName,
       priority:   "MEDIUM",
+      technician: { id: 10, name: "ช่าง A", email: "tech@test.com" },
     });
 
     const res = await request(app)
@@ -199,9 +206,35 @@ describe("POST /api/repair", () => {
     expect(res.status).toBe(201);
     expect(res.body.success).toBe(true);
     expect(res.body.data.deviceName).toBe(validBody.deviceName);
+    expect(res.body.data.technician).toBeDefined();
+    expect(res.body.data.technician.id).toBe(10);
+  });
+
+  it("201 เมื่อสร้างคำร้องสำเร็จ แต่ไม่มีช่างในระบบ", async () => {
+    // mock findMany สำหรับ autoAssign — ไม่มีช่าง
+    (prisma.user.findMany as jest.Mock).mockResolvedValueOnce([]);
+    (prisma.repairRequest.findFirst as jest.Mock).mockResolvedValueOnce(null);
+    (prisma.repairRequest.create as jest.Mock).mockResolvedValueOnce({
+      ...fakeRepair,
+      id:         "REP-20260221-0001",
+      deviceName: validBody.deviceName,
+      priority:   "MEDIUM",
+      technician: null,
+    });
+
+    const res = await request(app)
+      .post("/api/repair")
+      .set("Authorization", `Bearer ${makeToken(1, "USER")}`)
+      .send(validBody);
+
+    expect(res.status).toBe(201);
+    expect(res.body.success).toBe(true);
+    expect(res.body.data.technician).toBeNull();
   });
 
   it("400 เมื่อ deviceName ว่าง", async () => {
+    // mock autoAssign (findMany) เพื่อให้ไม่ crash ถ้า validation ผ่าน
+    (prisma.user.findMany as jest.Mock).mockResolvedValueOnce([]);
     const res = await request(app)
       .post("/api/repair")
       .set("Authorization", `Bearer ${makeToken(1, "USER")}`)
@@ -212,6 +245,7 @@ describe("POST /api/repair", () => {
   });
 
   it("400 เมื่อ description สั้นกว่า 10 ตัวอักษร", async () => {
+    (prisma.user.findMany as jest.Mock).mockResolvedValueOnce([]);
     const res = await request(app)
       .post("/api/repair")
       .set("Authorization", `Bearer ${makeToken(1, "USER")}`)
@@ -330,13 +364,14 @@ describe("PATCH /api/repair/:id/status", () => {
     (prisma.repairRequest.findUnique as jest.Mock).mockResolvedValueOnce({
       ...existingRepair,
       techId: null, // ยังไม่ assign
+      status: "PENDING",
     });
     (prisma.$transaction as jest.Mock).mockResolvedValueOnce([updatedRepair, {}]);
 
     const res = await request(app)
       .patch("/api/repair/REP-20260221-0001/status")
       .set("Authorization", `Bearer ${makeToken(1, "ADMIN")}`)
-      .send({ status: "COMPLETED" });
+      .send({ status: "IN_PROGRESS" });
 
     expect(res.status).toBe(200);
   });

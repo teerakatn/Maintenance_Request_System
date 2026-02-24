@@ -28,6 +28,7 @@ jest.mock("../../lib/email", () => ({
 
 jest.mock("bcryptjs", () => ({
   hash: jest.fn().mockResolvedValue("hashed_password_mock"),
+  hashSync: jest.fn().mockReturnValue("$2b$12$dummyhashfortimesafetycheck000000000000000000000000"),
   compare: jest.fn(),
 }));
 

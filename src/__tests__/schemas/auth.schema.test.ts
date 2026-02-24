@@ -44,11 +44,14 @@ describe("registerSchema", () => {
     }
   });
 
-  it("ยอมรับ role = TECH และ ADMIN", () => {
-    for (const role of ["TECH", "ADMIN"] as const) {
-      const result = registerSchema.safeParse({ ...validPayload, role });
-      expect(result.success).toBe(true);
-    }
+  it("ยอมรับ role = TECH", () => {
+    const result = registerSchema.safeParse({ ...validPayload, role: "TECH" });
+    expect(result.success).toBe(true);
+  });
+
+  it("ปฏิเสธ role = ADMIN (ต้องแก้ผ่าน DB เท่านั้น)", () => {
+    const result = registerSchema.safeParse({ ...validPayload, role: "ADMIN" });
+    expect(result.success).toBe(false);
   });
 
   it("ปฏิเสธเมื่อ name สั้นกว่า 2 ตัวอักษร", () => {

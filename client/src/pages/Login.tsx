@@ -17,8 +17,11 @@ export default function Login() {
     setError(null);
     setLoading(true);
     try {
-      await login(email.trim(), password);
-      navigate("/", { replace: true });
+      const loggedInUser = await login(email.trim(), password);
+      // Redirect ตาม role — ป้องกัน infinite loop ของ ProtectedRoute
+      if (loggedInUser.role === "TECH")  navigate("/technician", { replace: true });
+      else if (loggedInUser.role === "ADMIN") navigate("/admin", { replace: true });
+      else navigate("/", { replace: true });
     } catch (err: unknown) {
       const msg =
         err instanceof Error

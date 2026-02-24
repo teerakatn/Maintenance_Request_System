@@ -50,9 +50,11 @@ export const registerSchema = z
       .string({ error: "กรุณายืนยันรหัสผ่าน" })
       .min(1, "กรุณายืนยันรหัสผ่าน"),
 
+    // ✅ Security: ห้ามสมัครเป็น ADMIN ผ่าน API สาธารณะ
+    //    ADMIN ต้องถูกแก้ไขผ่าน Database โดย DBA เท่านั้น
     role: z
-      .enum(["USER", "TECH", "ADMIN"], {
-        error: "Role ต้องเป็น USER, TECH หรือ ADMIN",
+      .enum(["USER", "TECH"], {
+        error: "Role ต้องเป็น USER หรือ TECH เท่านั้น",
       })
       .default("USER"),
   })

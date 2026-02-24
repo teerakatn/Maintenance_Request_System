@@ -1,7 +1,6 @@
 import { useState, type FormEvent, type ChangeEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
-import type { Role } from "../types/auth";
 
 // ── Password strength rules (mirrors backend OWASP schema) ───────────────────
 interface Rule { label: string; test: (p: string) => boolean }
@@ -113,8 +112,10 @@ export default function Register() {
   const { register } = useAuth();
   const navigate = useNavigate();
 
+  // ✅ Security: จำกัดให้สมัครได้เฉพาะ USER และ TECH เท่านั้น
+  //    ADMIN ต้องถูกแก้ไขผ่าน Database โดย DBA เท่านั้น
   const [form, setForm] = useState({
-    name: "", email: "", password: "", confirmPassword: "", role: "USER" as Role,
+    name: "", email: "", password: "", confirmPassword: "", role: "USER" as "USER" | "TECH",
   });
   const [fieldErrors, setFieldErrors] = useState<Partial<Record<keyof typeof form, string>>>({});
   const [serverError, setServerError] = useState<string | null>(null);
@@ -151,9 +152,13 @@ export default function Register() {
 
     setLoading(true);
     try {
-      await register(form);
+      const loggedInUser = await register(form);
       setSuccess(true);
-      setTimeout(() => navigate("/", { replace: true }), 1200);
+      // Redirect ตาม role — ป้องกัน infinite loop ของ ProtectedRoute
+      const path = loggedInUser.role === "TECH" ? "/technician"
+                 : loggedInUser.role === "ADMIN" ? "/admin"
+                 : "/";
+      setTimeout(() => navigate(path, { replace: true }), 1200);
     } catch (err: unknown) {
       // Parse backend Zod errors if available
       if (err && typeof err === "object" && "response" in err) {
@@ -176,10 +181,10 @@ export default function Register() {
     }
   }
 
-  const ROLE_OPTIONS: { value: Role; label: string; desc: string; icon: string }[] = [
-    { value: "USER",  label: "ผู้แจ้งซ่อม",     desc: "แจ้งซ่อมและติดตามสถานะ", icon: "👤" },
-    { value: "TECH",  label: "ช่างซ่อม",        desc: "รับงานและอัปเดตผลซ่อม",  icon: "🔧" },
-    { value: "ADMIN", label: "ผู้ดูแลระบบ",      desc: "จัดการระบบและรายงาน",    icon: "⚙️" },
+  // ✅ Security: ไม่มีตัวเลือก ADMIN ในหน้าสมัครสมาชิกสาธารณะ
+  const ROLE_OPTIONS: { value: "USER" | "TECH"; label: string; desc: string; icon: string }[] = [
+    { value: "USER", label: "ผู้แจ้งซ่อม", desc: "แจ้งซ่อมและติดตามสถานะ", icon: "👤" },
+    { value: "TECH", label: "ช่างซ่อม",   desc: "รับงานและอัปเดตผลซ่อม",  icon: "🔧" },
   ];
 
   return (
@@ -248,7 +253,7 @@ export default function Register() {
               <label className="block text-sm font-medium text-gray-700">
                 ประเภทผู้ใช้ <span className="text-red-500">*</span>
               </label>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-2 gap-2">
                 {ROLE_OPTIONS.map((opt) => (
                   <label
                     key={opt.value}
@@ -263,7 +268,7 @@ export default function Register() {
                       name="role"
                       value={opt.value}
                       checked={form.role === opt.value}
-                      onChange={() => setForm((p) => ({ ...p, role: opt.value }))}
+                      onChange={() => setForm((p) => ({ ...p, role: opt.value as "USER" | "TECH" }))}
                       className="sr-only"
                     />
                     <div className="text-lg mb-1">{opt.icon}</div>
@@ -281,6 +286,16 @@ export default function Register() {
                   </label>
                 ))}
               </div>
+            </div>
+
+            {/* Note: ADMIN is DB-only */}
+            <div className="flex items-start gap-2 rounded-xl bg-amber-50 border border-amber-200 px-3 py-2.5">
+              <svg className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <p className="text-xs text-amber-700">
+                <span className="font-semibold">หมายเหตุ:</span> บัญชี <span className="font-semibold">ผู้ดูแลระบบ (Admin)</span> ไม่สามารถสมัครได้ผ่านหน้านี้ — ต้องให้ DBA แก้ไข Role ใน Database เท่านั้น
+              </p>
             </div>
 
             {/* Submit */}

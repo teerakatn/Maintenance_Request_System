@@ -27,7 +27,14 @@ router.get("/repairs", async (req: Request, res: Response): Promise<void> => {
     const where: Record<string, unknown> = {};
     if (status)   where["status"]   = status;
     if (priority) where["priority"] = priority;
-    if (techId)   where["techId"]   = parseInt(techId);
+    if (techId) {
+      const parsedTechId = parseInt(techId);
+      if (isNaN(parsedTechId)) {
+        res.status(400).json({ success: false, message: "techId ต้องเป็นตัวเลข" });
+        return;
+      }
+      where["techId"] = parsedTechId;
+    }
 
     const [total, requests] = await prisma.$transaction([
       prisma.repairRequest.count({ where }),
@@ -151,8 +158,9 @@ router.get("/technicians", async (_req: Request, res: Response): Promise<void> =
 // ---------------------------------------------------------------------------
 router.get("/report/summary", async (_req: Request, res: Response): Promise<void> => {
   try {
+    // รวมทุก query ไว้ใน $transaction เดียวกัน — ลดรอบ DB จาก 9 เป็น 1 batch
     const [total, pending, inProgress, waitingReview, completed,
-           prioLow, prioMedium, prioHigh] =
+           prioLow, prioMedium, prioHigh, recentRequests] =
       await prisma.$transaction([
         prisma.repairRequest.count(),
         prisma.repairRequest.count({ where: { status: "PENDING" } }),
@@ -162,17 +170,15 @@ router.get("/report/summary", async (_req: Request, res: Response): Promise<void
         prisma.repairRequest.count({ where: { priority: "LOW" } }),
         prisma.repairRequest.count({ where: { priority: "MEDIUM" } }),
         prisma.repairRequest.count({ where: { priority: "HIGH" } }),
+        prisma.repairRequest.findMany({          // 5 คำร้องล่าสุด
+          take: 5,
+          orderBy: { createdAt: "desc" },
+          include: {
+            user:       { select: { name: true } },
+            technician: { select: { name: true } },
+          },
+        }),
       ]);
-
-    // 5 คำร้องล่าสุด
-    const recentRequests = await prisma.repairRequest.findMany({
-      take: 5,
-      orderBy: { createdAt: "desc" },
-      include: {
-        user:       { select: { name: true } },
-        technician: { select: { name: true } },
-      },
-    });
 
     res.status(200).json({
       success: true,

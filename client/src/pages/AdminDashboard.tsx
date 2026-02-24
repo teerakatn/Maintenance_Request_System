@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import Navbar from "../components/Navbar";
 import StatusBadge from "../components/StatusBadge";
 import { fetchAllRepairs, fetchTechnicians, assignRepair, fetchAdminSummary } from "../lib/api";
+import type { AdminSummaryData } from "../lib/api";
 import type { RepairRequest } from "../types/repair";
 
 const PRIORITY_LABEL: Record<string, string> = { LOW: "ต่ำ", MEDIUM: "ปานกลาง", HIGH: "สูง" };
@@ -100,7 +101,7 @@ function AssignModal({
 export default function AdminDashboard() {
   const [repairs,      setRepairs]      = useState<RepairRequest[]>([]);
   const [technicians,  setTechnicians]  = useState<Technician[]>([]);
-  const [summary,      setSummary]      = useState<Record<string, number>>({});
+  const [summary,      setSummary]      = useState<AdminSummaryData>({ counts: { total: 0, pending: 0, inProgress: 0, waitingReview: 0, completed: 0 }, byPriority: [], recentRequests: [] });
   const [loading,      setLoading]      = useState(true);
   const [error,        setError]        = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState("");
@@ -108,7 +109,7 @@ export default function AdminDashboard() {
   const [page,         setPage]         = useState(1);
   const [totalPages,   setTotalPages]   = useState(1);
 
-  async function load() {
+  const load = useCallback(async () => {
     setLoading(true); setError(null);
     try {
       const [repairRes, techRes, summaryRes] = await Promise.all([
@@ -125,23 +126,28 @@ export default function AdminDashboard() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [statusFilter, page]);
 
-  useEffect(() => { load(); }, [statusFilter, page]);
-  useEffect(() => { setPage(1); }, [statusFilter]);
+  // เปลี่ยน filter → reset page ไปพร้อมกันใน event เดียวกัน (ป้องกัน double-load เมื่อ filter เปลี่ยน)
+  const handleFilterChange = useCallback((value: string) => {
+    setStatusFilter(value);
+    setPage(1);
+  }, []);
 
-  function handleAssigned(updated: RepairRequest) {
-    setRepairs((prev) => prev.map((r) => (r.id === updated.id ? updated : r)));
+  useEffect(() => { void load(); }, [load]);
+
+  const handleAssigned = useCallback((updated: RepairRequest) => {
+    setRepairs((prev) => prev.map((r) => (r.id === updated.id ? { ...r, ...updated } : r)));
     setAssigning(null);
-  }
+  }, []);
 
-  const STATUS_TABS = [
-    { value: "",              label: "ทั้งหมด",    count: summary["total"]    ?? repairs.length },
-    { value: "PENDING",       label: "รอดำเนินการ", count: summary["pending"]  ?? 0 },
-    { value: "IN_PROGRESS",   label: "กำลังซ่อม",   count: summary["active"]   ?? 0 },
-    { value: "WAITING_REVIEW",label: "รอตรวจรับ",   count: summary["review"]   ?? 0 },
-    { value: "COMPLETED",     label: "เสร็จสิ้น",   count: summary["done"]     ?? 0 },
-  ];
+  const STATUS_TABS = useMemo(() => [
+    { value: "",              label: "ทั้งหมด",    count: summary.counts.total },
+    { value: "PENDING",       label: "รอดำเนินการ", count: summary.counts.pending },
+    { value: "IN_PROGRESS",   label: "กำลังซ่อม",   count: summary.counts.inProgress },
+    { value: "WAITING_REVIEW",label: "รอตรวจรับ",   count: summary.counts.waitingReview },
+    { value: "COMPLETED",     label: "เสร็จสิ้น",   count: summary.counts.completed },
+  ], [summary]);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -166,10 +172,10 @@ export default function AdminDashboard() {
         {/* Summary stats */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
-            { label: "คำร้องทั้งหมด",  count: summary["total"]   ?? 0, color: "bg-white border border-gray-100 shadow-sm text-gray-800" },
-            { label: "รอดำเนินการ",    count: summary["pending"] ?? 0, color: "bg-amber-50 text-amber-800" },
-            { label: "กำลังซ่อม",      count: summary["active"]  ?? 0, color: "bg-blue-50 text-blue-800" },
-            { label: "เสร็จสิ้น",       count: summary["done"]    ?? 0, color: "bg-green-50 text-green-800" },
+            { label: "คำร้องทั้งหมด",  count: summary.counts.total,      color: "bg-white border border-gray-100 shadow-sm text-gray-800" },
+            { label: "รอดำเนินการ",    count: summary.counts.pending,    color: "bg-amber-50 text-amber-800" },
+            { label: "กำลังซ่อม",      count: summary.counts.inProgress, color: "bg-blue-50 text-blue-800" },
+            { label: "เสร็จสิ้น",       count: summary.counts.completed,  color: "bg-green-50 text-green-800" },
           ].map((s) => (
             <div key={s.label} className={`rounded-2xl p-4 ${s.color} flex items-center gap-3`}>
               <p className="text-2xl font-bold">{s.count}</p>
@@ -181,7 +187,7 @@ export default function AdminDashboard() {
         {/* Filter tabs */}
         <div className="flex gap-2 overflow-x-auto pb-1">
           {STATUS_TABS.map((tab) => (
-            <button key={tab.value} onClick={() => setStatusFilter(tab.value)}
+            <button key={tab.value} onClick={() => handleFilterChange(tab.value)}
               className={`shrink-0 flex items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-medium transition-colors
                 ${statusFilter === tab.value
                   ? "bg-purple-600 text-white shadow-sm"

@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { createRepair, fetchMyRepairs } from "../lib/api";
+import { useEffect, useState, useMemo, useCallback } from "react";
+import { createRepair, fetchMyRepairs, confirmRepair } from "../lib/api";
 import type { CreateRepairPayload, RepairRequest } from "../types/repair";
 import NewRepairModal from "../components/NewRepairModal";
 import ProgressStepper from "../components/ProgressStepper";
@@ -26,8 +26,9 @@ const PRIORITY_COLOR: Record<string, string> = {
 };
 
 // ── Expanded row ──────────────────────────────────────────────────────────────
-function RepairCard({ request }: { request: RepairRequest }) {
+function RepairCard({ request, onConfirm }: { request: RepairRequest; onConfirm?: (id: string) => void }) {
   const [expanded, setExpanded] = useState(false);
+  const [confirming, setConfirming] = useState(false);
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden transition-all">
@@ -90,6 +91,20 @@ function RepairCard({ request }: { request: RepairRequest }) {
               <p className="text-sm text-blue-800">{request.repairNote}</p>
             </div>
           )}
+
+          {/* Confirm completion button — only when WAITING_REVIEW */}
+          {request.status === "WAITING_REVIEW" && onConfirm && (
+            <button
+              disabled={confirming}
+              onClick={async () => {
+                setConfirming(true);
+                try { await onConfirm(request.id); } finally { setConfirming(false); }
+              }}
+              className="mt-4 w-full rounded-xl bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white text-sm font-medium py-2.5 transition-colors"
+            >
+              {confirming ? "กำลังยืนยัน..." : "✓ ยืนยันการรับอุปกรณ์"}
+            </button>
+          )}
         </div>
       )}
     </div>
@@ -105,7 +120,7 @@ export default function Dashboard() {
   const [showModal, setShowModal] = useState(false);
   const [search, setSearch]       = useState("");
 
-  async function loadRepairs() {
+  const loadRepairs = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -116,29 +131,36 @@ export default function Dashboard() {
     } finally {
       setLoading(false);
     }
-  }
+  }, []);
 
-  useEffect(() => { loadRepairs(); }, []);
+  useEffect(() => { void loadRepairs(); }, [loadRepairs]);
 
-  async function handleCreateRepair(payload: CreateRepairPayload) {
+  const handleCreateRepair = useCallback(async (payload: CreateRepairPayload) => {
     const newRequest = await createRepair(payload);
     setRepairs((prev) => [newRequest, ...prev]);
-  }
+  }, []);
 
-  // Computed stats
-  const stats = {
+  const handleConfirmRepair = useCallback(async (id: string) => {
+    const updated = await confirmRepair(id);
+    setRepairs((prev) => prev.map((r) => (r.id === id ? { ...r, ...updated } : r)));
+  }, []);
+
+  // Computed stats — คำนวณใหม่เฉพาะเมื่อ repairs เปลี่ยน
+  const stats = useMemo(() => ({
     total:   repairs.length,
     pending: repairs.filter((r) => r.status === "PENDING").length,
     active:  repairs.filter((r) => r.status === "IN_PROGRESS" || r.status === "WAITING_REVIEW").length,
     done:    repairs.filter((r) => r.status === "COMPLETED").length,
-  };
+  }), [repairs]);
 
-  // Filtered list
-  const filtered = repairs.filter((r) =>
-    search === "" ||
-    r.deviceName.toLowerCase().includes(search.toLowerCase()) ||
-    r.id.toLowerCase().includes(search.toLowerCase())
-  );
+  // Filtered list — คำนวณใหม่เฉพาะเมื่อ repairs หรือ search เปลี่ยน
+  const filtered = useMemo(() =>
+    repairs.filter((r) =>
+      search === "" ||
+      r.deviceName.toLowerCase().includes(search.toLowerCase()) ||
+      r.id.toLowerCase().includes(search.toLowerCase())
+    ),
+  [repairs, search]);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -221,7 +243,7 @@ export default function Dashboard() {
           </div>
         ) : (
           <div className="space-y-3">
-            {filtered.map((r) => <RepairCard key={r.id} request={r} />)}
+            {filtered.map((r) => <RepairCard key={r.id} request={r} onConfirm={handleConfirmRepair} />)}
           </div>
         )}
       </main>

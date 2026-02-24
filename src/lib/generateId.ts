@@ -3,6 +3,12 @@ import prisma from "./prisma";
 /**
  * สร้าง Repair Request ID ในรูปแบบ REP-YYYYMMDD-XXXX
  * โดย XXXX คือลำดับนับต่อเนื่องของวันนั้น (0001, 0002, ...)
+ *
+ * ใช้ findFirst + orderBy desc เพื่อหาลำดับล่าสุดจริง แทนที่จะใช้ count (bug เดิม: ถ้าลบ record กลางวัน
+ * count จะไม่ตรงกับลำดับที่สร้างไปแล้ว)
+ *
+ * NOTE: Caller (ใน repair.ts) ควร retry เมื่อเกิด duplicate key (P2002)
+ * เพื่อป้องกัน race condition กรณี concurrent requests
  */
 export async function generateRepairId(): Promise<string> {
   const today = new Date();
@@ -13,13 +19,16 @@ export async function generateRepairId(): Promise<string> {
 
   const prefix = `REP-${datePart}-`;
 
-  // นับจำนวน request ในวันนี้
-  const count = await prisma.repairRequest.count({
-    where: {
-      id: { startsWith: prefix },
-    },
+  // หา request ล่าสุดของวันนี้เพื่อหาลำดับถัดไป
+  const latest = await prisma.repairRequest.findFirst({
+    where: { id: { startsWith: prefix } },
+    orderBy: { id: "desc" },
+    select: { id: true },
   });
 
-  const sequence = String(count + 1).padStart(4, "0"); // "0001"
-  return `${prefix}${sequence}`;
+  const nextSeq = latest
+    ? parseInt(latest.id.slice(-4), 10) + 1
+    : 1;
+
+  return `${prefix}${String(nextSeq).padStart(4, "0")}`;
 }

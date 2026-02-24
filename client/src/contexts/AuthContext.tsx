@@ -13,8 +13,8 @@ interface AuthContextValue {
   user: AuthUser | null;
   token: string | null;
   isLoading: boolean;
-  register: (payload: RegisterPayload) => Promise<void>;
-  login: (email: string, password: string) => Promise<void>;
+  register: (payload: RegisterPayload) => Promise<AuthUser>;
+  login: (email: string, password: string) => Promise<AuthUser>;
   logout: () => void;
 }
 
@@ -43,18 +43,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoading(false);
   }, []);
 
-  async function register(payload: RegisterPayload) {
+  async function register(payload: RegisterPayload): Promise<AuthUser> {
     await registerApi(payload);
     // หลังสมัครสำเร็จ → login อัตโนมัติ
-    await login(payload.email, payload.password);
+    return login(payload.email, payload.password);
   }
 
-  async function login(email: string, password: string) {
+  async function login(email: string, password: string): Promise<AuthUser> {
     const { token: newToken, user: newUser } = await loginApi(email, password);
     localStorage.setItem("token", newToken);
     localStorage.setItem("user", JSON.stringify(newUser));
     setToken(newToken);
     setUser(newUser);
+    return newUser;
   }
 
   function logout() {

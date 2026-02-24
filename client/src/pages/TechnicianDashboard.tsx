@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import Navbar from "../components/Navbar";
 import StatusBadge from "../components/StatusBadge";
 import ProgressStepper from "../components/ProgressStepper";
@@ -152,7 +152,7 @@ function JobCard({ job, onUpdate }: { job: RepairRequest; onUpdate: (j: RepairRe
       {expanded && (
         <div className="px-5 pb-5 border-t border-gray-100 space-y-4 pt-4">
           <p className="text-sm text-gray-600">{job.description}</p>
-          <ProgressStepper currentStatus={job.status} />
+          <ProgressStepper status={job.status} />
           {job.repairNote && (
             <div className="rounded-xl bg-amber-50 border border-amber-100 px-4 py-3">
               <p className="text-xs font-semibold text-amber-700 mb-1">บันทึกการซ่อม</p>
@@ -179,7 +179,7 @@ export default function TechnicianDashboard() {
   const [statusFilter, setStatusFilter] = useState("");
   const [updating,    setUpdating]    = useState<RepairRequest | null>(null);
 
-  async function load() {
+  const load = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -190,22 +190,22 @@ export default function TechnicianDashboard() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [statusFilter]);
 
-  useEffect(() => { load(); }, [statusFilter]);
+  useEffect(() => { void load(); }, [load]);
 
-  function handleUpdated(updated: RepairRequest) {
-    setJobs((prev) => prev.map((j) => (j.id === updated.id ? updated : j)));
+  const handleUpdated = useCallback((updated: RepairRequest) => {
+    setJobs((prev) => prev.map((j) => (j.id === updated.id ? { ...j, ...updated } : j)));
     setUpdating(null);
-  }
+  }, []);
 
-  // Stats
-  const stats = {
+  // Stats — คำนวณใหม่เฉพาะเมื่อ jobs เปลี่ยน
+  const stats = useMemo(() => ({
     total:    jobs.length,
     active:   jobs.filter((j) => j.status === "IN_PROGRESS").length,
     review:   jobs.filter((j) => j.status === "WAITING_REVIEW").length,
     done:     jobs.filter((j) => j.status === "COMPLETED").length,
-  };
+  }), [jobs]);
 
   return (
     <div className="min-h-screen bg-gray-50">

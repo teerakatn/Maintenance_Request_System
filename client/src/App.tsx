@@ -19,7 +19,7 @@ export default function App() {
 
           {/* ─── USER (ผู้แจ้งซ่อม) ────────────────────────────────── */}
           <Route path="/" element={
-            <ProtectedRoute allowedRoles={["USER", "ADMIN"]}>
+            <ProtectedRoute allowedRoles={["USER", "ADMIN"]} fallback="/technician">
               <Dashboard />
             </ProtectedRoute>
           } />

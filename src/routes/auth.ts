@@ -7,6 +7,9 @@ import { registerSchema, loginSchema } from "../schemas/auth.schema";
 
 const router = Router();
 
+// Pre-compute valid bcrypt hash for timing-safe login comparison (runs once at module load)
+const DUMMY_HASH = bcrypt.hashSync("__timing_safe_dummy__", 12);
+
 // ---------------------------------------------------------------------------
 // POST /api/auth/register
 // ---------------------------------------------------------------------------
@@ -74,7 +77,6 @@ router.post("/login", async (req: Request, res: Response): Promise<void> => {
 
     // ป้องกัน User Enumeration: ทำ bcrypt dummy compare เสมอ แม้ user ไม่มีอยู่
     // เพื่อให้ response time เท่ากัน ไม่ว่า email จะถูกหรือผิด (Timing-Safe)
-    const DUMMY_HASH = "$2b$12$invalidhashfortimingreasonsonlyXXXXXXXXXXX";
     let isMatch = false;
     if (user) {
       isMatch = await bcrypt.compare(password, user.password);
