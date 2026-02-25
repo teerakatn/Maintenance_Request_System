@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 
 export default function Login() {
@@ -34,7 +34,7 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-linear-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
         {/* Logo & Title */}
         <div className="text-center mb-8">
@@ -142,9 +142,10 @@ export default function Login() {
 
         <p className="text-center text-sm text-gray-500 mt-5">
           ยังไม่มีบัญชี?{" "}
-          <a href="/register" className="font-semibold text-blue-600 hover:text-blue-700 hover:underline">
+          {/* Link ใช้ React Router — ไม่ reload หน้า */}
+          <Link to="/register" className="font-semibold text-blue-600 hover:text-blue-700 hover:underline">
             สมัครสมาชิก
-          </a>
+          </Link>
         </p>
         <p className="text-center text-xs text-gray-400 mt-3">
           ระบบแจ้งซ่อมอุปกรณ์ · สงวนสิทธิ์

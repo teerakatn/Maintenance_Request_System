@@ -78,7 +78,8 @@ export default function Navbar({ onNewRepair }: { onNewRepair?: () => void }) {
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2.5 group">
             <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center shadow shadow-blue-200 group-hover:bg-blue-700 transition-colors">
-              <svg className="w-4.5 h-4.5 text-white w-[18px] h-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              {/* w-4.5 h-4.5 = 18px — Tailwind v4 native shorthand */}
+              <svg className="w-4.5 h-4.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round"
                   d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 11-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z" />
               </svg>
@@ -131,7 +132,7 @@ export default function Navbar({ onNewRepair }: { onNewRepair?: () => void }) {
                   {user.name.charAt(0).toUpperCase()}
                 </div>
                 <div className="hidden sm:block text-left">
-                  <p className="text-xs font-semibold text-gray-900 leading-none max-w-[120px] truncate">{user.name}</p>
+                  <p className="text-xs font-semibold text-gray-900 leading-none max-w-30 truncate">{user.name}</p>
                   <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${ROLE_COLOR[user.role]}`}>
                     {ROLE_LABEL[user.role]}
                   </span>
@@ -169,11 +170,12 @@ export default function Navbar({ onNewRepair }: { onNewRepair?: () => void }) {
               )}
             </div>
 
-            {/* Mobile hamburger */}
+            {/* Mobile hamburger — aria-expanded บอก screen reader ว่าเมนูเปิดหรือปิด */}
             <button
               onClick={() => setMobileOpen((v) => !v)}
               className="md:hidden p-2 rounded-lg text-gray-500 hover:bg-gray-100 transition-colors"
               aria-label="เมนู"
+              aria-expanded={mobileOpen}
             >
               {mobileOpen ? (
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

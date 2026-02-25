@@ -7,12 +7,13 @@ import StatusBadge from "../components/StatusBadge";
 import Navbar from "../components/Navbar";
 import { useAuth } from "../contexts/AuthContext";
 
-// ── Stat card ─────────────────────────────────────────────────────────────────
+// ── Stat card — ใช้ร่วมกับทุก dashboard (ขนาด p-4/gap-3/text-2xl เหมือนกัน) ────────────────────────────
 function StatCard({ label, count, color }: { label: string; count: number; color: string }) {
   return (
-    <div className={`rounded-2xl p-5 ${color} flex items-center gap-4`}>
-      <p className="text-3xl font-bold">{count}</p>
-      <p className="text-sm font-medium leading-tight">{label}</p>
+    <div className={`rounded-2xl p-4 ${color} flex items-center gap-3`}>
+      {/* tabular-nums ทำให้ตัวเลขไม่กระตุกเมื่อตัวเลขเปลี่ยน */}
+      <p className="text-2xl font-bold tabular-nums">{count}</p>
+      <p className="text-xs font-medium leading-tight">{label}</p>
     </div>
   );
 }
@@ -92,7 +93,7 @@ function RepairCard({ request, onConfirm }: { request: RepairRequest; onConfirm?
             </div>
           )}
 
-          {/* Confirm completion button — only when WAITING_REVIEW */}
+          {/* ปุ่มยืนยันรับ — แสดงเฉพาะเมื่อสถานะ WAITING_REVIEW */}
           {request.status === "WAITING_REVIEW" && onConfirm && (
             <button
               disabled={confirming}
@@ -100,9 +101,24 @@ function RepairCard({ request, onConfirm }: { request: RepairRequest; onConfirm?
                 setConfirming(true);
                 try { await onConfirm(request.id); } finally { setConfirming(false); }
               }}
-              className="mt-4 w-full rounded-xl bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white text-sm font-medium py-2.5 transition-colors"
+              className="mt-4 w-full rounded-xl bg-green-600 hover:bg-green-700 disabled:opacity-50
+                text-white text-sm font-semibold py-2.5 transition-colors active:scale-[.98]"
             >
-              {confirming ? "กำลังยืนยัน..." : "✓ ยืนยันการรับอุปกรณ์"}
+              {confirming ? (
+                /* CSS spinner — สม่ำเสมอกับหน้าอื่นๆ */
+                <span className="flex items-center justify-center gap-2">
+                  <span className="w-4 h-4 rounded-full border-2 border-white border-t-transparent animate-spin" />
+                  กำลังยืนยัน...
+                </span>
+              ) : (
+                /* SVG checkmark — ดูเป็นมืออาชีพกว่าใช้ emoji */
+                <span className="flex items-center justify-center gap-1.5">
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
+                  ยืนยันการรับอุปกรณ์
+                </span>
+              )}
             </button>
           )}
         </div>

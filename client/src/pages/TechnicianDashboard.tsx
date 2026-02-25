@@ -6,6 +6,7 @@ import { fetchAssignedJobs, updateRepairStatus } from "../lib/api";
 import type { RepairRequest, RequestStatus } from "../types/repair";
 
 const PRIORITY_LABEL: Record<string, string> = { LOW: "ต่ำ", MEDIUM: "ปานกลาง", HIGH: "สูง" };
+/* หมายเหตุ: PRIORITY_LABEL / PRIORITY_COLOR สอดคล้องกับ Dashboard.tsx — เพราะไม่มี shared constants file จึงเก็บไว้แยกกัน */
 const PRIORITY_COLOR: Record<string, string> = {
   LOW:    "text-green-600 bg-green-50",
   MEDIUM: "text-amber-600 bg-amber-50",
@@ -104,8 +105,15 @@ function UpdateModal({
             ยกเลิก
           </button>
           <button onClick={handleSubmit} disabled={loading || options.length === 0}
-            className="flex-1 rounded-xl bg-blue-600 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 transition-colors disabled:opacity-60">
-            {loading ? "กำลังบันทึก…" : "บันทึก"}
+            className="flex-1 rounded-xl bg-blue-600 py-2.5 text-sm font-semibold text-white
+              hover:bg-blue-700 transition-colors disabled:opacity-60">
+            {loading ? (
+              /* CSS spinner — สม่ำเสมอกับทุกหน้า */
+              <span className="flex items-center justify-center gap-2">
+                <span className="w-4 h-4 rounded-full border-2 border-white border-t-transparent animate-spin" />
+                กำลังบันทึก…
+              </span>
+            ) : "บันทึก"}
           </button>
         </div>
       </div>
@@ -220,13 +228,14 @@ export default function TechnicianDashboard() {
         {/* Stats */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
-            { label: "งานทั้งหมด",    count: stats.total,  color: "bg-white border border-gray-100 shadow-sm text-gray-800" },
+            { label: "งานทั้งหมด",  count: stats.total,  color: "bg-white border border-gray-100 shadow-sm text-gray-800" },
             { label: "กำลังซ่อม",     count: stats.active,  color: "bg-blue-50 text-blue-800" },
             { label: "รอตรวจรับ",     count: stats.review,  color: "bg-amber-50 text-amber-800" },
             { label: "เสร็จสิ้น",     count: stats.done,    color: "bg-green-50 text-green-800" },
           ].map((s) => (
             <div key={s.label} className={`rounded-2xl p-4 ${s.color} flex items-center gap-3`}>
-              <p className="text-2xl font-bold">{s.count}</p>
+              {/* tabular-nums — ป้องกันตัวเลขกระตุกเมื่อค่าเปลี่ยน */}
+              <p className="text-2xl font-bold tabular-nums">{s.count}</p>
               <p className="text-xs font-medium leading-tight">{s.label}</p>
             </div>
           ))}

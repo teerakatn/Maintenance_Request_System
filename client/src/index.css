@@ -1,9 +1,17 @@
 @import "tailwindcss";
 
-/* ── Base ────────────────────────────────────────────────────────────────────
-   ลบ Vite default template styles ออก เพื่อไม่ให้ขัดกับ Tailwind
-   (สาเหตุของ dark background + body flex centering + button override)
+/* ── Reset ───────────────────────────────────────────────────────────────────
+   กำหนดค่าพื้นฐานที่ถูกต้อง ป้องกัน browser default ขัดกับ Tailwind
 ──────────────────────────────────────────────────────────────────────────── */
+
+/* ทุก element ใช้ box-sizing: border-box — padding/border ไม่ทำให้ขนาดล้น */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* ── Base ────────────────────────────────────────────────────────────────────  */
 
 :root {
   font-family: "Inter", system-ui, Avenir, Helvetica, Arial, sans-serif;
@@ -13,8 +21,49 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Smooth scroll สำหรับ anchor link และ scroll-to-top */
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  line-height: 1.5; /* ช่วยให้ข้อความอ่านง่ายขึ้น */
+}
+
 /* ให้ #root เต็มพื้นที่เสมอ */
 #root {
   width: 100%;
   min-height: 100vh;
+}
+
+/* ── Selection ───────────────────────────────────────────────────────────────
+   สีเมื่อ highlight ข้อความ ให้ดูสอดคล้องกับ theme สีน้ำเงิน
+──────────────────────────────────────────────────────────────────────────── */
+
+::selection {
+  background-color: #dbeafe; /* blue-100 */
+  color: #1d4ed8;            /* blue-700 */
+}
+
+/* ── Scrollbar (WebKit: Chrome / Edge / Safari) ──────────────────────────────
+   ทำ scrollbar ดูบางและเรียบร้อยกว่า browser default
+──────────────────────────────────────────────────────────────────────────── */
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #cbd5e1; /* slate-300 */
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: #94a3b8; /* slate-400 — สีเข้มขึ้นเมื่อ hover */
 }

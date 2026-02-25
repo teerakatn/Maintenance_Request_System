@@ -6,6 +6,7 @@ import type { AdminSummaryData } from "../lib/api";
 import type { RepairRequest } from "../types/repair";
 
 const PRIORITY_LABEL: Record<string, string> = { LOW: "ต่ำ", MEDIUM: "ปานกลาง", HIGH: "สูง" };
+/* หมายเหตุ: PRIORITY_LABEL / PRIORITY_COLOR สอดคล้องกับ Dashboard.tsx — เพราะไม่มี shared constants file จึงเก็บไว้แยกกัน */
 const PRIORITY_COLOR: Record<string, string> = {
   LOW:    "text-green-600 bg-green-50",
   MEDIUM: "text-amber-600 bg-amber-50",
@@ -88,8 +89,15 @@ function AssignModal({
             ยกเลิก
           </button>
           <button onClick={handleSubmit} disabled={loading || !techId}
-            className="flex-1 rounded-xl bg-purple-600 py-2.5 text-sm font-semibold text-white hover:bg-purple-700 transition-colors disabled:opacity-60">
-            {loading ? "กำลังมอบหมาย…" : "มอบหมาย"}
+            className="flex-1 rounded-xl bg-purple-600 py-2.5 text-sm font-semibold text-white
+              hover:bg-purple-700 transition-colors disabled:opacity-60">
+            {loading ? (
+              /* CSS spinner — สม่ำเสมอกับทุกหน้า */
+              <span className="flex items-center justify-center gap-2">
+                <span className="w-4 h-4 rounded-full border-2 border-white border-t-transparent animate-spin" />
+                กำลังมอบหมาย…
+              </span>
+            ) : "มอบหมาย"}
           </button>
         </div>
       </div>
@@ -178,7 +186,8 @@ export default function AdminDashboard() {
             { label: "เสร็จสิ้น",       count: summary.counts.completed,  color: "bg-green-50 text-green-800" },
           ].map((s) => (
             <div key={s.label} className={`rounded-2xl p-4 ${s.color} flex items-center gap-3`}>
-              <p className="text-2xl font-bold">{s.count}</p>
+              {/* tabular-nums — ป้องกันตัวเลขกระตุกเมื่อค่าเปลี่ยน */}
+              <p className="text-2xl font-bold tabular-nums">{s.count}</p>
               <p className="text-xs font-medium leading-tight">{s.label}</p>
             </div>
           ))}
