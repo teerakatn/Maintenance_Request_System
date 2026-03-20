@@ -72,12 +72,12 @@ export default function Navbar({ onNewRepair }: { onNewRepair?: () => void }) {
   }, [logout, navigate]);
 
   return (
-    <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-gray-100 shadow-sm shadow-gray-100/60">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6">
-        <div className="flex items-center justify-between h-14">
+    <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-xl border-b border-gray-200/60 shadow-sm shadow-gray-200/40 transition-all duration-300">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 2xl:px-10">
+        <div className="flex items-center justify-between h-14 sm:h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2.5 group">
-            <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center shadow shadow-blue-200 group-hover:bg-blue-700 transition-colors">
+            <div className="w-8 h-8 rounded-lg bg-linear-to-br from-blue-500 to-blue-700 flex items-center justify-center shadow-md shadow-blue-200/60 group-hover:shadow-lg group-hover:shadow-blue-300/50 group-hover:scale-105 transition-all duration-200">
               {/* w-4.5 h-4.5 = 18px — Tailwind v4 native shorthand */}
               <svg className="w-4.5 h-4.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round"
@@ -93,10 +93,10 @@ export default function Navbar({ onNewRepair }: { onNewRepair?: () => void }) {
               <Link
                 key={item.to}
                 to={item.to}
-                className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200
                   ${location.pathname === item.to
-                    ? "bg-blue-50 text-blue-700"
-                    : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                    ? "bg-blue-50 text-blue-700 shadow-sm shadow-blue-100/50"
+                    : "text-gray-500 hover:bg-gray-50 hover:text-gray-900"
                   }`}
               >
                 {item.icon}
@@ -109,7 +109,7 @@ export default function Navbar({ onNewRepair }: { onNewRepair?: () => void }) {
               <button
                 onClick={onNewRepair}
                 className="ml-2 flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-semibold
-                  bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+                  bg-linear-to-r from-blue-600 to-blue-700 text-white hover:from-blue-700 hover:to-blue-800 shadow-sm shadow-blue-200/50 hover:shadow-md hover:shadow-blue-300/40 active:scale-[.97] transition-all duration-200"
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
@@ -147,7 +147,7 @@ export default function Navbar({ onNewRepair }: { onNewRepair?: () => void }) {
               {userMenuOpen && (
                 <>
                   <div className="fixed inset-0 z-30" onClick={() => setUserMenuOpen(false)} />
-                  <div className="absolute right-0 top-full mt-2 w-52 rounded-2xl bg-white shadow-xl border border-gray-100 overflow-hidden z-40">
+                  <div className="absolute right-0 top-full mt-2 w-52 rounded-2xl bg-white shadow-xl shadow-gray-200/50 border border-gray-100 overflow-hidden z-40 animate-scale-in origin-top-right">
                     <div className="px-4 py-3 border-b border-gray-100">
                       <p className="text-sm font-semibold text-gray-900 truncate">{user.name}</p>
                       <p className="text-xs text-gray-500 truncate mt-0.5">{user.email}</p>
@@ -192,16 +192,16 @@ export default function Navbar({ onNewRepair }: { onNewRepair?: () => void }) {
 
         {/* Mobile nav drawer */}
         {mobileOpen && (
-          <nav className="md:hidden pb-3 pt-1 space-y-1 border-t border-gray-100">
+          <nav className="md:hidden pb-3 pt-1 space-y-1 border-t border-gray-100 animate-slide-down">
             {items.map((item) => (
               <Link
                 key={item.to}
                 to={item.to}
                 onClick={() => setMobileOpen(false)}
-                className={`flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors
+                className={`flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200
                   ${location.pathname === item.to
-                    ? "bg-blue-50 text-blue-700"
-                    : "text-gray-700 hover:bg-gray-100"
+                    ? "bg-blue-50 text-blue-700 shadow-sm shadow-blue-100/50"
+                    : "text-gray-700 hover:bg-gray-50"
                   }`}
               >
                 {item.icon}

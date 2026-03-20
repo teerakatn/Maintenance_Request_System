@@ -43,7 +43,7 @@ export default function StatusBadge({ status, size = "md" }: Props) {
 
   return (
     <span
-      className={`inline-flex items-center rounded-full font-medium ring-1 ring-inset ${sizeClass} ${badgeClass}`}
+      className={`inline-flex items-center rounded-full font-medium ring-1 ring-inset select-none transition-all duration-200 ${sizeClass} ${badgeClass}`}
     >
       {/* จุดสีแสดงสถานะ — ทำให้แยกแยะได้เร็วแม้ไม่ได้อ่านข้อความ */}
       <span className={`${dotSize} rounded-full shrink-0 ${dotClass} ${dotAnimate}`} />

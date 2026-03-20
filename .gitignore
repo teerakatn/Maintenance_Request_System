@@ -54,3 +54,5 @@ Thumbs.db
 # ========================
 prisma/dev.db
 prisma/dev.db-journal
+prisma/create-admin.ts
+prisma/reset-password.ts

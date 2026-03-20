@@ -58,8 +58,8 @@ function UpdateModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/40 backdrop-blur-sm">
-      <div className="w-full max-w-sm bg-white rounded-3xl shadow-2xl p-6 space-y-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/40 backdrop-blur-sm animate-fade-in">
+      <div className="w-full max-w-sm bg-white rounded-3xl shadow-2xl p-6 space-y-4 animate-scale-in">
         <h2 className="font-bold text-gray-900 text-lg">อัปเดตสถานะ</h2>
         <p className="text-sm text-gray-500 -mt-2 truncate">{request.deviceName} ({request.id})</p>
 
@@ -70,8 +70,8 @@ function UpdateModal({
           <label className="text-sm font-medium text-gray-700">สถานะใหม่</label>
           <div className="grid grid-cols-1 gap-2">
             {options.map((opt) => (
-              <label key={opt.value} className={`flex items-center gap-2 rounded-xl border-2 p-3 cursor-pointer transition-all
-                ${status === opt.value ? "border-blue-500 bg-blue-50" : "border-gray-200 hover:border-gray-300"}`}>
+              <label key={opt.value} className={`flex items-center gap-2 rounded-xl border-2 p-3 cursor-pointer transition-all duration-200
+                ${status === opt.value ? "border-blue-500 bg-blue-50 shadow-sm" : "border-gray-200 hover:border-gray-300 hover:shadow-sm"}`}>
                 <input type="radio" name="newStatus" value={opt.value}
                   checked={status === opt.value} onChange={() => setNewStatus(opt.value)} className="sr-only" />
                 <StatusBadge status={opt.value} size="sm" />
@@ -127,7 +127,7 @@ function JobCard({ job, onUpdate }: { job: RepairRequest; onUpdate: (j: RepairRe
   const canUpdate = Object.keys(NEXT_STATUSES).includes(job.status);
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden transition-all duration-200 hover:shadow-md hover:border-gray-200">
       <button className="w-full text-left px-5 py-4 flex items-start gap-4 hover:bg-gray-50 transition-colors"
         onClick={() => setExpanded((v) => !v)}>
         <div className="shrink-0 w-12 h-12 rounded-xl overflow-hidden bg-gray-100 flex items-center justify-center">
@@ -218,37 +218,37 @@ export default function TechnicianDashboard() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 py-6 space-y-6">
+      <main className="max-w-5xl xl:max-w-6xl 2xl:max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 2xl:px-10 py-6 sm:py-8 space-y-6">
         {/* Header */}
-        <div>
-          <h1 className="text-xl font-bold text-gray-900">งานที่ได้รับมอบหมาย</h1>
+        <div className="animate-fade-in">
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">งานที่ได้รับมอบหมาย</h1>
           <p className="text-sm text-gray-500 mt-0.5">รายการคำร้องที่ได้รับมอบหมายให้คุณดูแล</p>
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 animate-slide-up delay-75">
           {[
             { label: "งานทั้งหมด",  count: stats.total,  color: "bg-white border border-gray-100 shadow-sm text-gray-800" },
             { label: "กำลังซ่อม",     count: stats.active,  color: "bg-blue-50 text-blue-800" },
             { label: "รอตรวจรับ",     count: stats.review,  color: "bg-amber-50 text-amber-800" },
             { label: "เสร็จสิ้น",     count: stats.done,    color: "bg-green-50 text-green-800" },
           ].map((s) => (
-            <div key={s.label} className={`rounded-2xl p-4 ${s.color} flex items-center gap-3`}>
+            <div key={s.label} className={`rounded-2xl p-4 sm:p-5 ${s.color} flex items-center gap-3 sm:gap-4 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5`}>
               {/* tabular-nums — ป้องกันตัวเลขกระตุกเมื่อค่าเปลี่ยน */}
-              <p className="text-2xl font-bold tabular-nums">{s.count}</p>
+              <p className="text-2xl sm:text-3xl font-bold tabular-nums">{s.count}</p>
               <p className="text-xs font-medium leading-tight">{s.label}</p>
             </div>
           ))}
         </div>
 
         {/* Filter tabs */}
-        <div className="flex gap-2 overflow-x-auto pb-1">
+        <div className="flex gap-2 overflow-x-auto pb-1 animate-slide-up delay-100">
           {STATUS_FILTER_OPTIONS.map((opt) => (
             <button key={opt.value} onClick={() => setStatusFilter(opt.value)}
-              className={`shrink-0 rounded-xl px-4 py-2 text-sm font-medium transition-colors
+              className={`shrink-0 rounded-xl px-4 py-2 text-sm font-medium transition-all duration-200
                 ${statusFilter === opt.value
-                  ? "bg-blue-600 text-white shadow-sm"
-                  : "bg-white border border-gray-200 text-gray-600 hover:border-gray-300"
+                  ? "bg-linear-to-r from-blue-600 to-blue-700 text-white shadow-md shadow-blue-200/50"
+                  : "bg-white border border-gray-200 text-gray-600 hover:border-gray-300 hover:shadow-sm"
                 }`}>
               {opt.label}
             </button>
@@ -258,7 +258,7 @@ export default function TechnicianDashboard() {
         {/* Job list */}
         {loading ? (
           <div className="space-y-3">
-            {[1,2,3].map((i) => <div key={i} className="h-24 rounded-2xl bg-white border border-gray-100 animate-pulse" />)}
+            {[1,2,3].map((i) => <div key={i} className="h-24 rounded-2xl bg-white border border-gray-100 skeleton-shimmer" />)}
           </div>
         ) : error ? (
           <div className="rounded-2xl bg-red-50 border border-red-200 px-6 py-8 text-center">

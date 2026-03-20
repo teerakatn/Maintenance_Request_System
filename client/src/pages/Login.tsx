@@ -34,22 +34,27 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center px-4">
-      <div className="w-full max-w-sm">
-        {/* Logo & Title */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-blue-600 shadow-lg shadow-blue-200 mb-4">
+    <div className="min-h-screen bg-linear-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+      {/* Decorative background blobs — CSS-only, ไม่กระทบ performance */}
+      <div className="absolute top-0 left-0 w-72 h-72 bg-blue-200/30 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2" />
+      <div className="absolute bottom-0 right-0 w-96 h-96 bg-indigo-200/20 rounded-full blur-3xl translate-x-1/3 translate-y-1/3" />
+      <div className="absolute top-1/2 right-1/4 w-48 h-48 bg-purple-200/15 rounded-full blur-2xl" />
+
+      <div className="w-full max-w-sm sm:max-w-md relative z-10">
+        {/* Logo & Title — animate stagger */}
+        <div className="text-center mb-8 sm:mb-10 animate-fade-in">
+          <div className="inline-flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-linear-to-br from-blue-500 to-blue-700 shadow-lg shadow-blue-300/40 mb-4">
             <svg className="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round"
                 d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 11-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z" />
             </svg>
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">ระบบแจ้งซ่อมอุปกรณ์</h1>
-          <p className="text-sm text-gray-500 mt-1">กรุณาเข้าสู่ระบบเพื่อดำเนินการ</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">ระบบแจ้งซ่อมอุปกรณ์</h1>
+          <p className="text-sm sm:text-base text-gray-500 mt-1">กรุณาเข้าสู่ระบบเพื่อดำเนินการ</p>
         </div>
 
-        {/* Card */}
-        <div className="bg-white rounded-3xl shadow-xl shadow-gray-100/80 border border-gray-100 px-8 py-8">
+        {/* Card — animate slide up */}
+        <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl shadow-gray-200/60 border border-white/80 px-6 py-6 sm:px-8 sm:py-8 animate-slide-up delay-100">
           <form onSubmit={handleSubmit} className="space-y-5" noValidate>
             {/* Error banner */}
             {error && (
@@ -74,9 +79,10 @@ export default function Login() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="example@email.com"
-                className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-900
-                  placeholder:text-gray-400 outline-none transition
-                  focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:bg-white"
+                className="w-full rounded-xl border border-gray-200 bg-gray-50/50 px-4 py-3 text-sm text-gray-900
+                  placeholder:text-gray-400 outline-none transition-all duration-200
+                  focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:bg-white focus:shadow-sm
+                  hover:border-gray-300"
               />
             </div>
 
@@ -94,9 +100,10 @@ export default function Login() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 pr-11 text-sm text-gray-900
-                    placeholder:text-gray-400 outline-none transition
-                    focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:bg-white"
+                  className="w-full rounded-xl border border-gray-200 bg-gray-50/50 px-4 py-3 pr-11 text-sm text-gray-900
+                    placeholder:text-gray-400 outline-none transition-all duration-200
+                    focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:bg-white focus:shadow-sm
+                    hover:border-gray-300"
                 />
                 {/* Toggle show/hide password */}
                 <button
@@ -124,8 +131,9 @@ export default function Login() {
             <button
               type="submit"
               disabled={loading || !email || !password}
-              className="w-full rounded-xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white
-                hover:bg-blue-700 active:scale-[.98] transition-all shadow-sm shadow-blue-200
+              className="w-full rounded-xl bg-linear-to-r from-blue-600 to-blue-700 px-4 py-3 text-sm font-semibold text-white
+                hover:from-blue-700 hover:to-blue-800 active:scale-[.98] transition-all duration-200 shadow-md shadow-blue-200/50
+                hover:shadow-lg hover:shadow-blue-300/40
                 disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100 mt-1"
             >
               {loading ? (
@@ -140,14 +148,14 @@ export default function Login() {
           </form>
         </div>
 
-        <p className="text-center text-sm text-gray-500 mt-5">
+        <p className="text-center text-sm text-gray-500 mt-5 animate-fade-in delay-300">
           ยังไม่มีบัญชี?{" "}
           {/* Link ใช้ React Router — ไม่ reload หน้า */}
           <Link to="/register" className="font-semibold text-blue-600 hover:text-blue-700 hover:underline">
             สมัครสมาชิก
           </Link>
         </p>
-        <p className="text-center text-xs text-gray-400 mt-3">
+        <p className="text-center text-xs text-gray-400 mt-3 animate-fade-in delay-400">
           ระบบแจ้งซ่อมอุปกรณ์ · สงวนสิทธิ์
         </p>
       </div>

@@ -1,5 +1,34 @@
 @import "tailwindcss";
 
+/* ── Design Tokens (Tailwind v4 @theme) ──────────────────────────────────────
+   กำหนด custom animation keyframes สำหรับ UI ทั้งระบบ
+──────────────────────────────────────────────────────────────────────────── */
+
+@theme {
+  /* — Animations — */
+  --animate-fade-in: fade-in 0.4s ease-out both;
+  --animate-slide-up: slide-up 0.45s ease-out both;
+  --animate-slide-down: slide-down 0.3s ease-out both;
+  --animate-scale-in: scale-in 0.25s ease-out both;
+
+  @keyframes fade-in {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+  @keyframes slide-up {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes slide-down {
+    from { opacity: 0; transform: translateY(-8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes scale-in {
+    from { opacity: 0; transform: scale(0.95); }
+    to   { opacity: 1; transform: scale(1); }
+  }
+}
+
 /* ── Reset ───────────────────────────────────────────────────────────────────
    กำหนดค่าพื้นฐานที่ถูกต้อง ป้องกัน browser default ขัดกับ Tailwind
 ──────────────────────────────────────────────────────────────────────────── */
@@ -37,6 +66,16 @@ body {
   min-height: 100vh;
 }
 
+/* ── Focus-visible ───────────────────────────────────────────────────────────
+   เพิ่ม focus ring สำหรับ keyboard navigation — ไม่แสดงเมื่อ click เมาส์
+──────────────────────────────────────────────────────────────────────────── */
+
+:focus-visible {
+  outline: 2px solid #3b82f6; /* blue-500 */
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+
 /* ── Selection ───────────────────────────────────────────────────────────────
    สีเมื่อ highlight ข้อความ ให้ดูสอดคล้องกับ theme สีน้ำเงิน
 ──────────────────────────────────────────────────────────────────────────── */
@@ -45,6 +84,38 @@ body {
   background-color: #dbeafe; /* blue-100 */
   color: #1d4ed8;            /* blue-700 */
 }
+
+/* ── Skeleton shimmer ────────────────────────────────────────────────────────
+   เอฟเฟกต์ shimmer ให้ skeleton loader ดู premium ขึ้น
+──────────────────────────────────────────────────────────────────────────── */
+
+.skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    #f1f5f9 25%,   /* slate-100 */
+    #e2e8f0 50%,   /* slate-200 */
+    #f1f5f9 75%    /* slate-100 */
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ── Animation delay utilities ───────────────────────────────────────────────
+   ใช้ร่วมกับ animate-slide-up / animate-fade-in เพื่อ stagger effect
+──────────────────────────────────────────────────────────────────────────── */
+
+.delay-75  { animation-delay: 75ms; }
+.delay-100 { animation-delay: 100ms; }
+.delay-150 { animation-delay: 150ms; }
+.delay-200 { animation-delay: 200ms; }
+.delay-300 { animation-delay: 300ms; }
+.delay-400 { animation-delay: 400ms; }
+.delay-500 { animation-delay: 500ms; }
 
 /* ── Scrollbar (WebKit: Chrome / Edge / Safari) ──────────────────────────────
    ทำ scrollbar ดูบางและเรียบร้อยกว่า browser default

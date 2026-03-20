@@ -75,8 +75,9 @@ function Field({
           onChange={onChange}
           placeholder={placeholder}
           className={`w-full rounded-xl border px-4 py-3 text-sm text-gray-900 placeholder:text-gray-400
-            bg-gray-50 outline-none transition
-            focus:bg-white focus:ring-2 focus:ring-blue-500/20
+            bg-gray-50/50 outline-none transition-all duration-200
+            focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:shadow-sm
+            hover:border-gray-300
             ${error ? "border-red-400 focus:border-red-400 focus:ring-red-500/20" : "border-gray-200 focus:border-blue-500"}
             ${isPassword ? "pr-11" : ""}
           `}
@@ -196,22 +197,26 @@ export default function Register() {
   ];
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center px-4 py-8">
-      <div className="w-full max-w-md">
+    <div className="min-h-screen bg-linear-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center px-4 sm:px-6 lg:px-8 py-8 relative overflow-hidden">
+      {/* Decorative background blobs */}
+      <div className="absolute top-0 right-0 w-80 h-80 bg-indigo-200/25 rounded-full blur-3xl translate-x-1/3 -translate-y-1/3" />
+      <div className="absolute bottom-0 left-0 w-72 h-72 bg-blue-200/25 rounded-full blur-3xl -translate-x-1/3 translate-y-1/3" />
+
+      <div className="w-full max-w-md sm:max-w-lg relative z-10">
         {/* Logo & Title */}
-        <div className="text-center mb-7">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-blue-600 shadow-lg shadow-blue-200 mb-4">
+        <div className="text-center mb-7 animate-fade-in">
+          <div className="inline-flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-linear-to-br from-blue-500 to-blue-700 shadow-lg shadow-blue-300/40 mb-4">
             <svg className="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round"
                 d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 11-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z" />
             </svg>
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">สมัครสมาชิก</h1>
-          <p className="text-sm text-gray-500 mt-1">ระบบแจ้งซ่อมอุปกรณ์</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">สมัครสมาชิก</h1>
+          <p className="text-sm sm:text-base text-gray-500 mt-1">ระบบแจ้งซ่อมอุปกรณ์</p>
         </div>
 
         {/* Card */}
-        <div className="bg-white rounded-3xl shadow-xl shadow-gray-100/80 border border-gray-100 px-8 py-8">
+        <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl shadow-gray-200/60 border border-white/80 px-6 py-6 sm:px-8 sm:py-8 animate-slide-up delay-100">
           {/* Success banner */}
           {success && (
             <div className="flex items-center gap-2.5 rounded-xl bg-green-50 border border-green-200 px-4 py-3 mb-5">
@@ -265,10 +270,10 @@ export default function Register() {
                 {ROLE_OPTIONS.map((opt) => (
                   <label
                     key={opt.value}
-                    className={`relative cursor-pointer rounded-xl border-2 p-3 text-center transition-all
+                    className={`relative cursor-pointer rounded-xl border-2 p-3 text-center transition-all duration-200
                       ${form.role === opt.value
-                        ? "border-blue-500 bg-blue-50"
-                        : "border-gray-200 hover:border-gray-300 bg-white"
+                        ? "border-blue-500 bg-blue-50 shadow-sm shadow-blue-100/50"
+                        : "border-gray-200 hover:border-gray-300 hover:shadow-sm bg-white"
                       }`}
                   >
                     <input
@@ -310,8 +315,8 @@ export default function Register() {
             <button
               type="submit"
               disabled={loading || success}
-              className="w-full rounded-xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white shadow-sm shadow-blue-200
-                hover:bg-blue-700 active:scale-[0.98] transition-all disabled:opacity-60 disabled:cursor-not-allowed mt-2"
+              className="w-full rounded-xl bg-linear-to-r from-blue-600 to-blue-700 px-4 py-3 text-sm font-semibold text-white shadow-md shadow-blue-200/50
+                hover:from-blue-700 hover:to-blue-800 hover:shadow-lg hover:shadow-blue-300/40 active:scale-[0.98] transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed mt-2"
             >
             {loading ? (
               /* CSS border spinner — สม่ำเสมอกับหน้า Login */

@@ -49,7 +49,7 @@ export default function ProgressStepper({ status }: Props) {
             {idx < STEPS.length - 1 && (
               <div className="absolute top-4 left-1/2 w-full h-0.5 -z-10">
                 <div
-                  className={`h-full transition-all duration-500 ${isDone ? "bg-blue-500" : "bg-gray-200"}`}
+                  className={`h-full transition-all duration-700 ease-out ${isDone ? "bg-linear-to-r from-blue-500 to-blue-400" : "bg-gray-200"}`}
                 />
               </div>
             )}
@@ -58,11 +58,11 @@ export default function ProgressStepper({ status }: Props) {
             <div
               className={`
                 flex items-center justify-center w-9 h-9 rounded-full border-2 text-sm font-semibold
-                transition-all duration-300 shrink-0
+                transition-all duration-500 shrink-0
                 ${isDone
-                  ? "bg-blue-500 border-blue-500 text-white shadow-sm shadow-blue-200"
+                  ? "bg-linear-to-br from-blue-500 to-blue-600 border-blue-500 text-white shadow-md shadow-blue-200/50"
                   : isCurrent
-                    ? "bg-white border-blue-500 text-blue-600 ring-4 ring-blue-100"
+                    ? "bg-white border-blue-500 text-blue-600 ring-4 ring-blue-100 shadow-sm scale-110"
                     : "bg-white border-gray-200 text-gray-400"
                 }
               `}

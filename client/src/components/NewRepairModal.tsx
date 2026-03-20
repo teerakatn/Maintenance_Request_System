@@ -60,12 +60,12 @@ export default function NewRepairModal({ onClose, onSubmit }: Props) {
   return (
     // Backdrop
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-fade-in"
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto animate-scale-in">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
+        <div className="flex items-center justify-between px-5 py-4 sm:px-6 sm:py-5 border-b border-gray-100">
           <div>
             <h2 className="text-lg font-bold text-gray-900">แจ้งซ่อมใหม่</h2>
             <p className="text-sm text-gray-500 mt-0.5">กรอกข้อมูลอุปกรณ์ที่ต้องการซ่อม</p>
@@ -81,7 +81,7 @@ export default function NewRepairModal({ onClose, onSubmit }: Props) {
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="px-6 py-5 space-y-5">
+        <form onSubmit={handleSubmit} className="px-5 py-4 sm:px-6 sm:py-5 space-y-5">
           {errors.general && (
             <div className="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-600">
               {errors.general}
@@ -98,9 +98,9 @@ export default function NewRepairModal({ onClose, onSubmit }: Props) {
               value={deviceName}
               onChange={(e) => setDeviceName(e.target.value)}
               placeholder="เช่น คอมพิวเตอร์, เครื่องปรับอากาศ"
-              className={`w-full rounded-lg border px-3.5 py-2.5 text-sm outline-none transition-all
-                focus:ring-2 focus:ring-blue-500 focus:border-blue-500
-                ${errors.deviceName ? "border-red-400 bg-red-50" : "border-gray-300 bg-white"}`}
+              className={`w-full rounded-lg border px-3.5 py-2.5 text-sm outline-none transition-all duration-200
+                focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 focus:shadow-sm
+                ${errors.deviceName ? "border-red-400 bg-red-50" : "border-gray-200 bg-gray-50/50 hover:border-gray-300"}`}
             />
             {errors.deviceName && <p className="mt-1 text-xs text-red-500">{errors.deviceName}</p>}
           </div>
@@ -115,9 +115,9 @@ export default function NewRepairModal({ onClose, onSubmit }: Props) {
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="อธิบายอาการเสียหรือปัญหาที่พบ..."
-              className={`w-full rounded-lg border px-3.5 py-2.5 text-sm outline-none resize-none transition-all
-                focus:ring-2 focus:ring-blue-500 focus:border-blue-500
-                ${errors.description ? "border-red-400 bg-red-50" : "border-gray-300 bg-white"}`}
+              className={`w-full rounded-lg border px-3.5 py-2.5 text-sm outline-none resize-none transition-all duration-200
+                focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 focus:shadow-sm
+                ${errors.description ? "border-red-400 bg-red-50" : "border-gray-200 bg-gray-50/50 hover:border-gray-300"}`}
             />
             <div className="flex justify-between mt-1">
               {errors.description
@@ -175,8 +175,8 @@ export default function NewRepairModal({ onClose, onSubmit }: Props) {
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="w-full rounded-lg border-2 border-dashed border-gray-300 py-8 text-center
-                  hover:border-blue-400 hover:bg-blue-50 transition-colors group"
+                className="w-full rounded-lg border-2 border-dashed border-gray-200 py-8 text-center
+                  hover:border-blue-400 hover:bg-blue-50/50 transition-all duration-200 group cursor-pointer"
               >
                 <svg className="mx-auto w-8 h-8 text-gray-400 group-hover:text-blue-400 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}

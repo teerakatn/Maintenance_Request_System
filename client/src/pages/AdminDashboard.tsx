@@ -45,8 +45,8 @@ function AssignModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/40 backdrop-blur-sm">
-      <div className="w-full max-w-sm bg-white rounded-3xl shadow-2xl p-6 space-y-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/40 backdrop-blur-sm animate-fade-in">
+      <div className="w-full max-w-sm bg-white rounded-3xl shadow-2xl p-6 space-y-4 animate-scale-in">
         <h2 className="font-bold text-gray-900 text-lg">มอบหมายงาน</h2>
         <p className="text-sm text-gray-500 -mt-2 truncate">{repair.deviceName} ({repair.id})</p>
 
@@ -59,8 +59,8 @@ function AssignModal({
           ) : (
             <div className="space-y-2 max-h-52 overflow-y-auto">
               {technicians.map((t) => (
-                <label key={t.id} className={`flex items-center gap-3 rounded-xl border-2 p-3 cursor-pointer transition-all
-                  ${techId === t.id ? "border-blue-500 bg-blue-50" : "border-gray-200 hover:border-gray-300"}`}>
+                <label key={t.id} className={`flex items-center gap-3 rounded-xl border-2 p-3 cursor-pointer transition-all duration-200
+                  ${techId === t.id ? "border-blue-500 bg-blue-50 shadow-sm" : "border-gray-200 hover:border-gray-300 hover:shadow-sm"}`}>
                   <input type="radio" name="tech" value={t.id}
                     checked={techId === t.id} onChange={() => setTechId(t.id)} className="sr-only" />
                   <div className="w-8 h-8 rounded-full bg-amber-500 text-white flex items-center justify-center text-sm font-bold">
@@ -160,15 +160,15 @@ export default function AdminDashboard() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-6 space-y-6">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 2xl:px-10 py-6 sm:py-8 space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between animate-fade-in">
           <div>
-            <h1 className="text-xl font-bold text-gray-900">จัดการคำร้องซ่อม</h1>
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900">จัดการคำร้องซ่อม</h1>
             <p className="text-sm text-gray-500 mt-0.5">ดูและมอบหมายงานให้ช่างซ่อมทั้งหมดในระบบ</p>
           </div>
           <button onClick={load}
-            className="rounded-xl border border-gray-200 bg-white p-2.5 text-gray-500 hover:border-gray-300 transition-colors"
+            className="rounded-xl border border-gray-200 bg-white p-2.5 text-gray-500 hover:border-gray-300 hover:shadow-sm active:scale-95 transition-all duration-200"
             title="รีเฟรช">
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round"
@@ -178,29 +178,29 @@ export default function AdminDashboard() {
         </div>
 
         {/* Summary stats */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 animate-slide-up delay-75">
           {[
             { label: "คำร้องทั้งหมด",  count: summary.counts.total,      color: "bg-white border border-gray-100 shadow-sm text-gray-800" },
             { label: "รอดำเนินการ",    count: summary.counts.pending,    color: "bg-amber-50 text-amber-800" },
             { label: "กำลังซ่อม",      count: summary.counts.inProgress, color: "bg-blue-50 text-blue-800" },
             { label: "เสร็จสิ้น",       count: summary.counts.completed,  color: "bg-green-50 text-green-800" },
           ].map((s) => (
-            <div key={s.label} className={`rounded-2xl p-4 ${s.color} flex items-center gap-3`}>
+            <div key={s.label} className={`rounded-2xl p-4 sm:p-5 ${s.color} flex items-center gap-3 sm:gap-4 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5`}>
               {/* tabular-nums — ป้องกันตัวเลขกระตุกเมื่อค่าเปลี่ยน */}
-              <p className="text-2xl font-bold tabular-nums">{s.count}</p>
+              <p className="text-2xl sm:text-3xl font-bold tabular-nums">{s.count}</p>
               <p className="text-xs font-medium leading-tight">{s.label}</p>
             </div>
           ))}
         </div>
 
         {/* Filter tabs */}
-        <div className="flex gap-2 overflow-x-auto pb-1">
+        <div className="flex gap-2 overflow-x-auto pb-1 animate-slide-up delay-100">
           {STATUS_TABS.map((tab) => (
             <button key={tab.value} onClick={() => handleFilterChange(tab.value)}
-              className={`shrink-0 flex items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-medium transition-colors
+              className={`shrink-0 flex items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-medium transition-all duration-200
                 ${statusFilter === tab.value
-                  ? "bg-purple-600 text-white shadow-sm"
-                  : "bg-white border border-gray-200 text-gray-600 hover:border-gray-300"
+                  ? "bg-linear-to-r from-purple-600 to-purple-700 text-white shadow-md shadow-purple-200/50"
+                  : "bg-white border border-gray-200 text-gray-600 hover:border-gray-300 hover:shadow-sm"
                 }`}>
               {tab.label}
               <span className={`text-xs rounded-full px-1.5 py-0.5 font-semibold
@@ -214,7 +214,7 @@ export default function AdminDashboard() {
         {/* Table / Cards */}
         {loading ? (
           <div className="space-y-3">
-            {[1,2,3,4].map((i) => <div key={i} className="h-20 rounded-2xl bg-white border border-gray-100 animate-pulse" />)}
+            {[1,2,3,4].map((i) => <div key={i} className="h-20 rounded-2xl bg-white border border-gray-100 skeleton-shimmer" />)}
           </div>
         ) : error ? (
           <div className="rounded-2xl bg-red-50 border border-red-200 px-6 py-8 text-center">
@@ -226,7 +226,7 @@ export default function AdminDashboard() {
             <p className="text-gray-500">ไม่มีคำร้องในหมวดนี้</p>
           </div>
         ) : (
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden animate-fade-in">
             {/* Table header (hidden on mobile) */}
             <div className="hidden sm:grid grid-cols-12 gap-4 px-5 py-3 bg-gray-50 border-b border-gray-100 text-xs font-semibold text-gray-500 uppercase tracking-wide">
               <div className="col-span-3">อุปกรณ์</div>
@@ -239,7 +239,7 @@ export default function AdminDashboard() {
 
             <div className="divide-y divide-gray-50">
               {repairs.map((r) => (
-                <div key={r.id} className="grid grid-cols-1 sm:grid-cols-12 gap-2 sm:gap-4 px-5 py-4 hover:bg-gray-50/60 transition-colors items-center">
+                <div key={r.id} className="grid grid-cols-1 sm:grid-cols-12 gap-2 sm:gap-4 px-5 py-4 hover:bg-blue-50/30 transition-colors duration-150 items-center">
                   {/* Device */}
                   <div className="sm:col-span-3">
                     <p className="font-semibold text-gray-900 text-sm truncate">{r.deviceName}</p>
@@ -277,7 +277,7 @@ export default function AdminDashboard() {
                   <div className="sm:col-span-2 sm:text-right">
                     {r.status !== "COMPLETED" && (
                       <button onClick={() => setAssigning(r)}
-                        className="inline-flex items-center gap-1.5 text-xs font-semibold text-purple-700 bg-purple-50 hover:bg-purple-100 px-3 py-1.5 rounded-lg transition-colors">
+                        className="inline-flex items-center gap-1.5 text-xs font-semibold text-purple-700 bg-purple-50 hover:bg-purple-100 hover:shadow-sm px-3 py-1.5 rounded-lg transition-all duration-200">
                         <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                         </svg>
@@ -296,13 +296,13 @@ export default function AdminDashboard() {
           <div className="flex items-center justify-center gap-2">
             <button disabled={page <= 1} onClick={() => setPage((p) => p - 1)}
               className="rounded-xl border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600
-                disabled:opacity-40 hover:bg-gray-50 transition-colors">
+                disabled:opacity-40 hover:bg-gray-50 hover:shadow-sm active:scale-95 transition-all duration-200">
               ← ก่อนหน้า
             </button>
-            <span className="text-sm text-gray-500 px-2">หน้า {page} / {totalPages}</span>
+            <span className="text-sm text-gray-500 px-3 py-1 bg-gray-50 rounded-lg font-medium">หน้า {page} / {totalPages}</span>
             <button disabled={page >= totalPages} onClick={() => setPage((p) => p + 1)}
               className="rounded-xl border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600
-                disabled:opacity-40 hover:bg-gray-50 transition-colors">
+                disabled:opacity-40 hover:bg-gray-50 hover:shadow-sm active:scale-95 transition-all duration-200">
               ถัดไป →
             </button>
           </div>

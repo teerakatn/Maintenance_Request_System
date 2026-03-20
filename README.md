@@ -125,7 +125,7 @@ npm run seed
 | ชื่อ | Email | Password | Role |
 |------|-------|----------|------|
 | ผู้ดูแลระบบ | `admin@repair.local` | `Admin@1234` | ADMIN |
-| ช่างซ่อม | `tech@repair.local` | `Tech@1234` | TECH |
+| ช่างซ่อม | `tech@repair.local` | `Tech@1234 ` | TECH |
 | ผู้แจ้งซ่อม | `user@repair.local` | `User@1234` | USER |
 
 > ⚠️ รหัสผ่านเหล่านี้ใช้สำหรับทดสอบเท่านั้น — **ห้ามใช้ใน Production** ให้เปลี่ยนรหัสผ่านทันทีหลัง deploy
@@ -133,9 +133,9 @@ npm run seed
 ### 4. (ไม่บังคับ) เปิด Prisma Studio เพื่อดูข้อมูลในฐานข้อมูล
 
 ```bash
-npx prisma studio
-```
 
+```
+npx prisma studio
 ---
 
 ## การรันระบบ
