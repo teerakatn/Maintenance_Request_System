@@ -7,7 +7,11 @@
     "build": "npx tsc",
     "build:client": "cd client && npm run build",
     "build:all": "npm run build:client && npm run build",
+    "prisma:generate": "prisma generate",
+    "db:push": "prisma db push",
+    "migrate:deploy": "prisma migrate deploy",
     "start": "node dist/server.js",
+    "start:render": "npm run db:push && npm start",
     "seed": "ts-node prisma/seed.ts",
     "test": "jest",
     "test:coverage": "jest --coverage"
