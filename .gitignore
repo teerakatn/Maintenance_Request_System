@@ -56,3 +56,9 @@ prisma/dev.db
 prisma/dev.db-journal
 prisma/create-admin.ts
 prisma/reset-password.ts
+
+# ========================
+# Prevent Accidental README Commits
+# ========================
+README.md
+client/README.md

@@ -307,7 +307,7 @@ export default function Register() {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
               <p className="text-xs text-amber-700">
-                <span className="font-semibold">หมายเหตุ:</span> บัญชี <span className="font-semibold">ผู้ดูแลระบบ (Admin)</span> ไม่สามารถสมัครได้ผ่านหน้านี้ — ต้องให้ DBA แก้ไข Role ใน Database เท่านั้น
+                <span className="font-semibold">หมายเหตุ:</span> บัญชี <span className="font-semibold">ผู้ดูแลระบบ (Admin)</span> ไม่สามารถสมัครได้ผ่านหน้านี้ 
               </p>
             </div>
 
